@@ -30,14 +30,6 @@
     ]
   },
   "dependencies": {
-    "@testing-library/jest-dom": "^5.16.5",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@types/jest": "^27.5.2",
-    "@types/mysql": "^2.15.21",
-    "@types/node": "^16.11.60",
-    "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6",
     "express": "^4.18.1",
     "igc-parser": "^1.1.0",
     "igc-xc-score": "^1.6.1",
@@ -50,6 +42,13 @@
     "web-vitals": "^2.1.4"
   },
   "devDependencies": {
-    "@types/node": "^18.7.18"
+    "@types/jest": "^27.5.2",
+    "@types/mysql": "^2.15.21",
+    "@types/node": "^18.7.18",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0"
   }
 }
