@@ -1,0 +1,55 @@
+{
+  "name": "xc-db",
+  "version": "1.0.0",
+  "private": "true",
+  "description": "Paragliding XC DB",
+  "license": "UNLICENSED",
+  "author": "Momtchil Momtchev <momtchil@momtchev.com>",
+  "main": "index.js",
+  "scripts": {
+    "build": "react-scripts build",
+    "start": "react-scripts start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "dependencies": {
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/mysql": "^2.15.21",
+    "@types/node": "^16.11.60",
+    "@types/react": "^18.0.21",
+    "@types/react-dom": "^18.0.6",
+    "express": "^4.18.1",
+    "igc-parser": "^1.1.0",
+    "igc-xc-score": "^1.6.1",
+    "mysql": "^2.18.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1",
+    "rlayers": "^1.4.3",
+    "typescript": "^4.8.3",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.7.18"
+  }
+}
