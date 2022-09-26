@@ -45,7 +45,7 @@ async function recluster(routeId) {
 }
 async function classify() {
     let r = await db.query('SELECT * FROM flight WHERE route_id IS NULL LIMIT 1');
-    if (r.length == 0) {
+    if (r.length === 0) {
         console.warn('No more unclassified flights');
         return false;
     }

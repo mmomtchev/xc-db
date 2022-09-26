@@ -6,19 +6,21 @@ import { solver, scoringRules as scoring, Solution } from 'igc-xc-score';
 
 import * as db from './db';
 
-function triId(flight: IGCParser.IGCFile, score: Solution) {
-    return score.scoreInfo!.tp!.map(tp => {
-        const fix = flight.fixes[tp.r];
-        return [
-            fix.timestamp,
-            fix.latitude,
-            fix.longitude
-        ];
-    }).flat();
+function triId(flight: IGCParser.IGCFile) {
+    const top = flight.fixes.reduce((a: IGCParser.BRecord, x) =>
+        (x.gpsAltitude || x.pressureAltitude) > (a.gpsAltitude || a.pressureAltitude) ? x : a,
+        flight.fixes[0]);
+
+    return [
+        top.timestamp,
+        top.latitude,
+        top.longitude,
+        (top.gpsAltitude || top.pressureAltitude)
+    ];
 }
 
 function triHash(flight: IGCParser.IGCFile, score: Solution) {
-    const id = triId(flight, score);
+    const id = triId(flight);
     const hash = crypto.createHash('md5');
     hash.update(JSON.stringify(id));
     return hash.digest('hex');
@@ -42,7 +44,7 @@ async function importFlight(file: string) {
 
     const hash = triHash(flight, score);
 
-    let r = await db.query('SELECT * FROM flight WHERE HEX(hash) = ?', [ hash ]);
+    let r = await db.query('SELECT * FROM flight WHERE HEX(hash) = ?', [hash]);
     if (r.length > 0) {
         console.warn(`${file} : ${score.score} points, ${hash} already present`);
         return;
@@ -58,22 +60,26 @@ async function importFlight(file: string) {
         launchId = null;
     }
 
-    r = await db.query('INSERT INTO flight (hash, launch_id, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, score) VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ? )', [
-            hash, launchId,
-            score.scoreInfo.tp[0].y, score.scoreInfo.tp[0].x,
-            score.scoreInfo.tp[1].y, score.scoreInfo.tp[1].x,
-            score.scoreInfo.tp[2].y, score.scoreInfo.tp[2].x,
-            score.score
-        ]);
+    r = await db.query('INSERT INTO flight (hash, launch_id, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, score, distance, category, wing)'
+            + ' VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )', [
+        hash, launchId,
+        score.scoreInfo.tp[0].y, score.scoreInfo.tp[0].x,
+        score.scoreInfo.tp[1].y, score.scoreInfo.tp[1].x,
+        score.scoreInfo.tp[2].y, score.scoreInfo.tp[2].x,
+        score.score, score.scoreInfo.distance,
+        desc.category || 'X', desc.wing || 'Glider'
+    ]);
     const flightId = r['insertId'];
 
+    const points = [];
     for (let fixId = score.opt['launch']; fixId <= score.opt['landing']; fixId++) {
         const fix = flight.fixes[fixId];
-        await db.query('INSERT INTO point (id, flight_id, lat, lng, alt, time) VALUES ( ?, ?, ?, ?, ?, FROM_UNIXTIME(?) )', [
-            fixId, flightId, fix.latitude, fix.longitude, fix.gpsAltitude || fix.pressureAltitude, fix.timestamp
+        points.push([
+            fixId, flightId, fix.latitude, fix.longitude, fix.gpsAltitude || fix.pressureAltitude, new Date(fix.timestamp)
         ]);
     }
-    console.log(`${file}: added ${score.opt['landing'] - score.opt['launch'] + 1}/${flight.fixes.length} points from flight ${flightId}`);
+    await db.query('INSERT INTO point (id, flight_id, lat, lng, alt, time) VALUES ?', [points]);
+    console.log(`${file}: added ${points.length}/${flight.fixes.length} points from flight ${flightId}`);
 }
 
-importFlight(process.argv[2]).then(() => db.close());
+importFlight(process.argv[2]).finally(() => db.close());
