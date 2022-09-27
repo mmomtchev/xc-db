@@ -1,11 +1,15 @@
+DROP VIEW IF EXISTS route_info;
+
 DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS point;
-DROP TABLE IF EXISTS flight;
+DROP TABLE IF EXISTS flight_extra;
+DROP TABLE IF exists flight;
 DROP TABLE IF EXISTS route;
 DROP TABLE IF EXISTS launch;
 
 DROP FUNCTION IF EXISTS distance;
 
+-- Great circle route - more than enough for distances of less than 5km
 DELIMITER //
 CREATE FUNCTION distance ( x0 FLOAT, y0 FLOAT, x1 FLOAT, y1 FLOAT )
 RETURNS FLOAT
@@ -37,24 +41,40 @@ CREATE TABLE route (
 
 CREATE TABLE flight (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    hASh BINARY(16) NOT NULL,
+    hash BINARY(16) NOT NULL,
     launch_id MEDIUMINT UNSIGNED,
     route_id MEDIUMINT UNSIGNED,
+    launch_lat FLOAT NOT NULL,
+    launch_lng FLOAT NOT NULL,
     p1_lat FLOAT NOT NULL,
     p1_lng FLOAT NOT NULL,
     p2_lat FLOAT NOT NULL,
     p2_lng FLOAT NOT NULL,
     p3_lat FLOAT NOT NULL,
     p3_lng FLOAT NOT NULL,
+    e1_lat FLOAT NOT NULL,
+    e1_lng FLOAT NOT NULL,
+    e2_lat FLOAT NOT NULL,
+    e2_lng FLOAT NOT NULL,
+    type CHAR(3) NOT NULL,
     score DECIMAL(6,3) NOT NULL,
     distance DECIMAL(6,3) NOT NULL,
     category CHAR(3) NOT NULL,
-    wing VARCHAR(20) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (launch_id) REFERENCES launch (id),
     FOREIGN KEY (route_id) REFERENCES route (id),
     INDEX (launch_id),
     INDEX (route_id)
+);
+
+CREATE TABLE flight_extra (
+    id MEDIUMINT UNSIGNED NOT NULL,
+    glider VARCHAR(20) NOT NULL,
+    pilot_url VARCHAR(60) NOT NULL,
+    flight_url VARCHAR(60) NOT NULL,
+    pilot_name VARCHAR(60) NOT NULL,
+    PRIMARY KEY (id),
+    FOREIGN KEY (id) REFERENCES flight (id)
 );
 
 CREATE TABLE point (

@@ -7,15 +7,21 @@ import { solver, scoringRules as scoring, Solution } from 'igc-xc-score';
 import * as db from './db';
 
 function triId(flight: IGCParser.IGCFile) {
-    const top = flight.fixes.reduce((a: IGCParser.BRecord, x) =>
-        (x.gpsAltitude || x.pressureAltitude) > (a.gpsAltitude || a.pressureAltitude) ? x : a,
-        flight.fixes[0]);
+    const top = flight.fixes.reduce((a: number, _, i: number) =>
+        (flight.fixes[i].gpsAltitude || flight.fixes[i].pressureAltitude) >
+            (flight.fixes[a].gpsAltitude || flight.fixes[a].pressureAltitude) ?
+            i : a,
+        0);
 
     return [
-        top.timestamp,
-        top.latitude,
-        top.longitude,
-        (top.gpsAltitude || top.pressureAltitude)
+        flight.fixes[top].timestamp.toString(),
+        flight.fixes[top].latitude.toFixed(6),
+        flight.fixes[top].longitude.toFixed(6),
+        (flight.fixes[top].gpsAltitude || flight.fixes[top].pressureAltitude).toString(),
+        flight.fixes[top + 1].timestamp.toString(),
+        flight.fixes[top + 1].latitude.toFixed(6),
+        flight.fixes[top + 1].longitude.toFixed(6),
+        (flight.fixes[top + 1].gpsAltitude || flight.fixes[top].pressureAltitude).toString()
     ];
 }
 
@@ -50,35 +56,45 @@ async function importFlight(file: string) {
         return;
     }
 
+    await db.query('BEGIN');
     const launchFix = flight.fixes[score.opt['launch']];
-    const launch = await db.query('SELECT id, name, sub, distance(lat, lng, ?, ?) AS launch_distance FROM launch ORDER BY launch_distance ASC LIMIT 1',
+    /*const launch = await db.query('SELECT id, name, sub, distance(lat, lng, ?, ?) AS launch_distance FROM launch ORDER BY launch_distance ASC LIMIT 1',
         [launchFix.latitude, launchFix.longitude]);
     console.log(`${file}: launch ${launch[0]['id']} from ${launch[0]['name']} / ${launch[0]['sub']}, distance ${(launch[0]['launch_distance']).toFixed(3)}km`);
     let launchId = launch[0]['id'];
     if (launch[0]['launch_distance'] > 1) {
         console.log(`${file}: cannot identify launch`);
         launchId = null;
-    }
+    }*/
 
-    r = await db.query('INSERT INTO flight (hash, launch_id, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, score, distance, category, wing)'
-            + ' VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )', [
-        hash, launchId,
+    r = await db.query('INSERT INTO flight (hash, launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng, score, distance, category, type)'
+        + ' VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )', [
+        hash,
+        launchFix.latitude, launchFix.longitude,
         score.scoreInfo.tp[0].y, score.scoreInfo.tp[0].x,
         score.scoreInfo.tp[1].y, score.scoreInfo.tp[1].x,
         score.scoreInfo.tp[2].y, score.scoreInfo.tp[2].x,
+        score.scoreInfo.cp.in.y, score.scoreInfo.cp.in.x,
+        score.scoreInfo.cp.out.y, score.scoreInfo.cp.out.x,
         score.score, score.scoreInfo.distance,
-        desc.category || 'X', desc.wing || 'Glider'
+        desc.category, desc.type.toUpperCase()
     ]);
     const flightId = r['insertId'];
+    await db.query('INSERT INTO flight_extra (id, glider, pilot_url, flight_url, pilot_name) VALUES (?, ?, ?, ?, ? )', [
+        flightId, desc.glider, desc.pilot_url, desc.flight_url, desc.pilot_name
+    ]);
 
     const points = [];
     for (let fixId = score.opt['launch']; fixId <= score.opt['landing']; fixId++) {
         const fix = flight.fixes[fixId];
+        if (!(fix.gpsAltitude || fix.pressureAltitude))
+            continue;
         points.push([
             fixId, flightId, fix.latitude, fix.longitude, fix.gpsAltitude || fix.pressureAltitude, new Date(fix.timestamp)
         ]);
     }
     await db.query('INSERT INTO point (id, flight_id, lat, lng, alt, time) VALUES ?', [points]);
+    await db.query('COMMIT');
     console.log(`${file}: added ${points.length}/${flight.fixes.length} points from flight ${flightId}`);
 }
 
