@@ -9,8 +9,8 @@ const app = express();
 app.use(cors());
 
 app.get('/launch/list', async (req, res) => {
-    const r = await db.query('SELECT launch.id as id, launch.name as name, count(flight.launch_id) as flights, sum(flight.score) as score, lat, lng ' +
-        'FROM launch LEFT JOIN flight ON (launch.id = flight.launch_id) GROUP BY launch.name HAVING flights > 0 ORDER BY score DESC');
+    const r = await db.query('SELECT launch_info.id as id, count(flight.launch_id) as flights, sum(flight.score) as score, lat, lng ' +
+        'FROM launch_info LEFT JOIN flight ON (launch_info.id = flight.launch_id) GROUP BY launch_info.id HAVING flights > 0 ORDER BY score DESC');
     const geojson = {
         type: 'FeatureCollection',
         features: r.map((row) => ({
@@ -37,8 +37,15 @@ app.get('/launch/search/:str', async (req, res) => {
 });
 
 app.get('/launch/:id', async (req, res) => {
-    const r = await db.query('SELECT * FROM launch WHERE id = ? OR name = ?', [req.params.id, req.params.id]);
-    res.json(r);
+    const launch = (await db.query('SELECT * FROM launch_info WHERE id = ?', [req.params.id]))[0];
+    if (!launch)
+        return res.json({});
+    const name = await db.query('SELECT name, great_circle(lat, lng, ?, ?) AS launch_distance FROM launch_official ORDER BY launch_distance ASC LIMIT 1',
+        [launch['lat'], launch['lng']]);
+    if (name[0]['launch_distance'] < 3) {
+        launch['name'] = name[0]['name'];
+    }
+    res.json(launch);
 });
 
 app.get('/flight/list', async (req, res) => {

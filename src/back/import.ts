@@ -58,17 +58,10 @@ async function importFlight(file: string) {
 
     await db.query('BEGIN');
     const launchFix = flight.fixes[score.opt['launch']];
-    /*const launch = await db.query('SELECT id, name, sub, distance(lat, lng, ?, ?) AS launch_distance FROM launch ORDER BY launch_distance ASC LIMIT 1',
-        [launchFix.latitude, launchFix.longitude]);
-    console.log(`${file}: launch ${launch[0]['id']} from ${launch[0]['name']} / ${launch[0]['sub']}, distance ${(launch[0]['launch_distance']).toFixed(3)}km`);
-    let launchId = launch[0]['id'];
-    if (launch[0]['launch_distance'] > 1) {
-        console.log(`${file}: cannot identify launch`);
-        launchId = null;
-    }*/
 
-    r = await db.query('INSERT INTO flight (hash, launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng, score, distance, category, type)'
-        + ' VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )', [
+    r = await db.query('INSERT INTO flight (hash, launch_lat, launch_lng,'
+            + ' p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng, score, distance, category, type)'
+            + ' VALUES ( UNHEX(?), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ? )', [
         hash,
         launchFix.latitude, launchFix.longitude,
         score.scoreInfo.tp[0].y, score.scoreInfo.tp[0].x,
