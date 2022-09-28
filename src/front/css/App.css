@@ -1,0 +1,44 @@
+.header {
+  background-color: #282c34;
+  height: 5vh;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.map {
+  height: 95vh;
+  width: 100%;
+  padding: 10px;
+}
+
+.left-menu {
+  height: 95vh;
+  width: 400px;
+}
+
+.infobox {
+  border: 2px solid grey;
+  margin: 4px;
+  padding: 8px;
+}
+
+.info .label {
+  font-weight: normal;
+}
+
+.info .value {
+  font-weight: bold;
+  text-align: right;
+}
+
+.route-list {
+  overflow-y: scroll;
+}
+
+.route {
+  cursor: pointer;
+}

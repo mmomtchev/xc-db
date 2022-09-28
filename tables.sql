@@ -1,4 +1,5 @@
 DROP VIEW IF EXISTS route_info;
+DROP VIEW IF EXISTS launch_info;
 
 DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS point;
@@ -7,31 +8,45 @@ DROP TABLE IF exists flight;
 DROP TABLE IF EXISTS route;
 DROP TABLE IF EXISTS launch;
 
-DROP FUNCTION IF EXISTS distance;
+DROP FUNCTION IF EXISTS sup;
+DROP FUNCTION IF EXISTS great_circle;
 
--- Great circle route - more than enough for distances of less than 5km
+-- Great circle distance - more than enough for distances of less than 5km
+-- (no need to optimize the SQRT - it is far less expensive than the rest)
 DELIMITER //
-CREATE FUNCTION distance ( x0 FLOAT, y0 FLOAT, x1 FLOAT, y1 FLOAT )
+CREATE FUNCTION great_circle ( lat0 FLOAT, lng0 FLOAT, lat1 FLOAT, lng1 FLOAT )
 RETURNS FLOAT
 BEGIN
-    DECLARE lat FLOAT;
-    DECLARE lng FLOAT;
+    DECLARE lat_d FLOAT;
+    DECLARE lng_d FLOAT;
     DECLARE lat_m FLOAT;
 
-    SET lng = RADIANS(x0) - RADIANS(x1);
-    SET lat = RADIANS(y0) - RADIANS(y1);
-    SET lat_m = (RADIANS(y0) + RADIANS(y1)) / 2;
+    SET lat_d = RADIANS(lat0) - RADIANS(lat1);
+    SET lat_m = (RADIANS(lat0) + RADIANS(lat1)) / 2;
+    SET lng_d = RADIANS(lng0) - RADIANS(lng1);
 
-    RETURN 6371.009 * SQRT(POWER(lng, 2) + POWER(COS(lat_m) * lat, 2));
+    RETURN 6371.009 * SQRT(POWER(lng_d, 2) + POWER(COS(lat_m) * lat_d, 2));
 END; //
+
+CREATE FUNCTION sup ( a FLOAT, b FLOAT )
+RETURNS FLOAT
+BEGIN
+    RETURN IF (a > b, a, b);
+END; //
+
 DELIMITER ;
+
 
 CREATE TABLE launch (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
-    name CHAR(40) NOT NULL,
-    sub CHAR(40),
-    lat FLOAT,
-    lng FLOAT,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE launch_official (
+    id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    name VARCHAR(80) NOT NULL UNIQUE,
+    lat FLOAT NOT NULL,
+    lng FLOAT NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -103,3 +118,8 @@ CREATE VIEW route_info AS
         AVG(p1_lat) AS c1_lat, AVG(p1_lng) AS c1_lng, AVG(p2_lat) AS c2_lat, AVG(p2_lng) AS c2_lng, AVG(p3_lat) AS c3_lat, AVG(p3_lng) AS c3_lng,
         AVG(distance) AS avg_distance, AVG(score) AS avg_score, MAX(distance) AS max_distance, MAX(score) AS max_score, COUNT(*) AS flights
     FROM flight WHERE route_id IS NOT NULL GROUP BY route_id;
+
+CREATE VIEW launch_info AS
+    SELECT launch_id AS id,
+        AVG(launch_lat) AS lat, AVG(launch_lng) AS lng, SUM(score) AS score, COUNT(*) AS flights
+    FROM flight WHERE launch_id IS NOT NULL GROUP BY launch_id;

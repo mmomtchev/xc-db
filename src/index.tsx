@@ -3,7 +3,11 @@ import ReactDOM from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap/dist/js/bootstrap.bundle.js';
 import './index.css';
+
 import App from './front/App';
+import { store } from './front/store';
+import { Provider } from 'react-redux';
+
 import reportWebVitals from './front/reportWebVitals';
 
 const root = ReactDOM.createRoot(
@@ -11,7 +15,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <App />
+    <Provider store={store}>
+      <App />
+    </Provider>
   </React.StrictMode>
 );
 

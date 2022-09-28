@@ -12,7 +12,8 @@
         "outDir": "./build",
         "resolveJsonModule": true,
         "isolatedModules": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "skipLibCheck": true
     },
     "exclude": [
         "node_modules"

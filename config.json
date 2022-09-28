@@ -7,5 +7,9 @@
     },
     "dbserver": {
         "port": 8040
+    },
+    "skylines": {
+        "extent": [ -5, 55, 10, 40 ],
+        "pixelSize": [ 0.01, 0.01 ]
     }
 }
