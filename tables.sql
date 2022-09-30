@@ -1,5 +1,6 @@
 DROP VIEW IF EXISTS route_info;
 DROP VIEW IF EXISTS launch_info;
+DROP VIEW IF EXISTS flight_info;
 
 DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS point;
@@ -7,6 +8,7 @@ DROP TABLE IF EXISTS flight_extra;
 DROP TABLE IF exists flight;
 DROP TABLE IF EXISTS route;
 DROP TABLE IF EXISTS launch;
+DROP TABLE IF EXISTS launch_official;
 
 DROP FUNCTION IF EXISTS sup;
 DROP FUNCTION IF EXISTS great_circle;
@@ -59,18 +61,13 @@ CREATE TABLE flight (
     hash BINARY(16) NOT NULL,
     launch_id MEDIUMINT UNSIGNED,
     route_id MEDIUMINT UNSIGNED,
-    launch_lat FLOAT NOT NULL,
-    launch_lng FLOAT NOT NULL,
-    p1_lat FLOAT NOT NULL,
-    p1_lng FLOAT NOT NULL,
-    p2_lat FLOAT NOT NULL,
-    p2_lng FLOAT NOT NULL,
-    p3_lat FLOAT NOT NULL,
-    p3_lng FLOAT NOT NULL,
-    e1_lat FLOAT NOT NULL,
-    e1_lng FLOAT NOT NULL,
-    e2_lat FLOAT NOT NULL,
-    e2_lng FLOAT NOT NULL,
+    launch_point SMALLINT UNSIGNED NOT NULL,
+    landing_point SMALLINT UNSIGNED NOT NULL,
+    p1_point SMALLINT UNSIGNED NOT NULL,
+    p2_point SMALLINT UNSIGNED NOT NULL,
+    p3_point SMALLINT UNSIGNED NOT NULL,
+    e1_point SMALLINT UNSIGNED NOT NULL,
+    e2_point SMALLINT UNSIGNED NOT NULL,
     type CHAR(3) NOT NULL,
     score DECIMAL(6,3) NOT NULL,
     distance DECIMAL(6,3) NOT NULL,
@@ -84,6 +81,19 @@ CREATE TABLE flight (
 
 CREATE TABLE flight_extra (
     id MEDIUMINT UNSIGNED NOT NULL,
+    launch_lat FLOAT NOT NULL,
+    launch_lng FLOAT NOT NULL,
+    p1_lat FLOAT NOT NULL,
+    p1_lng FLOAT NOT NULL,
+    p2_lat FLOAT NOT NULL,
+    p2_lng FLOAT NOT NULL,
+    p3_lat FLOAT NOT NULL,
+    p3_lng FLOAT NOT NULL,
+    e1_lat FLOAT NOT NULL,
+    e1_lng FLOAT NOT NULL,
+    e2_lat FLOAT NOT NULL,
+    e2_lng FLOAT NOT NULL,
+    date DATE,
     glider VARCHAR(20) NOT NULL,
     pilot_url VARCHAR(60) NOT NULL,
     flight_url VARCHAR(60) NOT NULL,
@@ -116,10 +126,19 @@ CREATE TABLE wind (
 CREATE VIEW route_info AS
     SELECT route_id AS id,
         AVG(p1_lat) AS c1_lat, AVG(p1_lng) AS c1_lng, AVG(p2_lat) AS c2_lat, AVG(p2_lng) AS c2_lng, AVG(p3_lat) AS c3_lat, AVG(p3_lng) AS c3_lng,
-        AVG(distance) AS avg_distance, AVG(score) AS avg_score, MAX(distance) AS max_distance, MAX(score) AS max_score, COUNT(*) AS flights
-    FROM flight WHERE route_id IS NOT NULL GROUP BY route_id;
+        AVG(distance) AS avg_distance, AVG(score) AS avg_score, MAX(distance) AS max_distance, MAX(score) AS max_score,
+        COUNT(*) AS flights
+    FROM flight NATURAL JOIN flight_extra WHERE route_id IS NOT NULL GROUP BY route_id;
 
 CREATE VIEW launch_info AS
     SELECT launch_id AS id,
         AVG(launch_lat) AS lat, AVG(launch_lng) AS lng, SUM(score) AS score, COUNT(*) AS flights
-    FROM flight WHERE launch_id IS NOT NULL GROUP BY launch_id;
+    FROM flight NATURAL JOIN flight_extra WHERE launch_id IS NOT NULL GROUP BY launch_id;
+
+CREATE VIEW flight_info AS
+    SELECT 
+        flight.id AS id, launch_id, route_id,
+        launch_point, landing_point, p1_point, p2_point, p3_point, e1_point, e2_point,
+        launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng,
+        type, score, distance, category, glider, pilot_url, flight_url, pilot_name, date
+    FROM flight NATURAL LEFT JOIN flight_extra;

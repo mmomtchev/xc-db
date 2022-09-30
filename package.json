@@ -36,8 +36,9 @@
     "@types/ndarray": "^1.0.11",
     "bootstrap": "^5.2.1",
     "cors": "^2.8.5",
-    "express": "^4.18.1",
+    "express": "^5.0.0-beta.1",
     "gdal-async": "^3.5.2",
+    "geographiclib": "^1.52.2",
     "geotiff": "^2.0.5",
     "igc-parser": "^1.1.0",
     "igc-xc-score": "^1.6.1",
@@ -48,6 +49,7 @@
     "react-dom": "^18.2.0",
     "react-redux": "^8.0.4",
     "react-scripts": "5.0.1",
+    "react-transition-group": "^4.4.5",
     "rlayers": "^1.4.4",
     "typescript": "^4.8.3",
     "web-vitals": "^2.1.4"
@@ -60,6 +62,16 @@
     "@types/mysql": "^2.15.21",
     "@types/node": "^18.7.18",
     "@types/react": "^18.0.21",
-    "@types/react-dom": "^18.0.6"
+    "@types/react-dom": "^18.0.6",
+    "@typescript-eslint/eslint-plugin": "^5.38.1",
+    "@typescript-eslint/parser": "^5.38.1",
+    "@typescript-eslint/typescript-estree": "^5.38.1",
+    "eslint": "^8.24.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-react": "^7.31.8",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "prettier": "^2.7.1"
   }
 }

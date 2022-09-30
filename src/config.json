@@ -1,0 +1,27 @@
+{
+    "db": {
+        "user": "mmom",
+        "pass": "b045e6a8164d",
+        "db": "xcdb",
+        "host": "localhost"
+    },
+    "dbserver": {
+        "port": 8040,
+        "srtm_dir": "/home/mmom/velivole/dev/data/SRTM1/hgt/unzipped"
+    },
+    "skylines": {
+        "extent": [
+            -5,
+            55,
+            10,
+            40
+        ],
+        "pixelSize": [
+            0.01,
+            0.01
+        ]
+    },
+    "tracklog": {
+        "points": 1024
+    }
+}

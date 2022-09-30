@@ -9,7 +9,7 @@ export function connect() {
         db = mysql.createConnection({
             database: config.db.db,
             host: config.db.host,
-            user: config.db.user,
+            user: config.db.user
             //password: config.db.pass
         });
 
@@ -24,10 +24,11 @@ export function query(sql, args?: unknown[]): Promise<unknown[]> {
     if (!db) connect();
 
     return new Promise((resolve, reject) => {
-        db.query(sql, args, (err, res) => {
+        const q = db.query(sql, args, (err, res) => {
             if (err) reject(err);
             resolve(res);
         });
+        if (process.env.DEBUG) console.debug(q.sql);
     });
 }
 

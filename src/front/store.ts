@@ -1,5 +1,5 @@
-import { configureStore, createSlice } from '@reduxjs/toolkit';
-import { TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch } from 'react-redux';
+import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
+import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
 
 export type LaunchInfo = {
     id: number;
@@ -13,51 +13,151 @@ export type LaunchInfo = {
 export type RouteInfo = {
     id: number;
     flights: number;
+    flightsLaunch: number;
     maxScore: number;
     avgScore: number;
     avgDistance: number;
+    maxDistance: number;
     tp: number[][];
 };
 
-export type Settings = {
-    mode: 'score' | 'avg' | 'flights';
+export const SQLRouteInfo = (route) =>
+    ({
+        id: route.id,
+        launch_id: route.launch_id,
+        flights: route.flights,
+        flightsLaunch: route.flights_launch,
+        maxScore: route.max_score,
+        avgScore: route.avg_score,
+        maxDistance: route.max_distance,
+        avgDistance: route.avg_distance,
+        tp: [
+            [route.c1_lng, route.c1_lat],
+            [route.c2_lng, route.c2_lat],
+            [route.c3_lng, route.c3_lat]
+        ]
+    } as RouteInfo);
+
+export type FlightInfo = {
+    route_id: number;
+    id: number;
+    launch_id: number;
+    type: 'FAI' | 'TRI';
+    pilotName: string;
+    pilotUrl: string;
+    flightUrl: string;
+    category: string;
+    glider: string;
+    distance: number;
+    score: number;
+    date: number;
+    tp: number[][];
+    launch: number[];
+    ep: number[][];
 };
 
-export const launchSlice = createSlice({
-    name: 'launch',
-    initialState: {
-        value: null as LaunchInfo
-    },
-    reducers: {
-        load: (state, action) => {
-            state.value = action.payload;
-        }
-    }
-});
+export const SQLFlightInfo = (flight) =>
+    ({
+        route_id: flight.route_id,
+        id: flight.id,
+        launch_id: flight.launch_id,
+        type: flight.type,
+        pilotName: flight.pilot_name,
+        pilotUrl: flight.pilot_url,
+        flightUrl: flight.flight_url,
+        category: flight.category,
+        glider: flight.glider,
+        distance: flight.distance,
+        score: flight.score,
+        date: Date.parse(flight.date),
+        tp: [
+            [flight.p1_lng, flight.p1_lat],
+            [flight.p2_lng, flight.p2_lat],
+            [flight.p3_lng, flight.p3_lat]
+        ],
+        launch: [flight.launch_lng, flight.launch_lat],
+        ep: [
+            [flight.e1_lng, flight.e1_lat],
+            [flight.e2_lng, flight.e2_lat]
+        ]
+    } as FlightInfo);
 
-export const routesListSlice = createSlice({
-    name: 'routesList',
-    initialState: {
-        value: [] as RouteInfo[]
-    },
-    reducers: {
-        load: (state, action) => {
-            state.value = action.payload;
-        },
-        empty: (state) => {
-            state.value = [];
-        },
-    }
-});
+export const categoriesGlider = ['A', 'B', 'C', 'D', 'O', 'K', 'bi'] as const;
+export const categoriesScore = [{to: 50}, {from: 50, to: 100}, {from: 100, to: 200}, {from: 200, to: 300}, {from: 300}];
+export type Settings = {
+    mode: 'score' | 'avg' | 'flights';
+    category: {
+        [Property in typeof categoriesGlider[number]]: boolean;
+    };
+    score: boolean[];
+};
 
-export const routeSlice = createSlice({
-    name: 'route',
+export type FlightSegment = {
+    d: number;
+    start: number;
+    finish: number;
+    avg: number[];
+    min: number[];
+    max: number[];
+    terrain: number[];
+};
+
+export const flightData = createSlice({
+    name: 'flightData',
     initialState: {
-        value: null as RouteInfo
+        launch: null as LaunchInfo,
+        routesList: [] as RouteInfo[],
+        route: null as RouteInfo,
+        flights: [] as FlightInfo[],
+        profile: [] as FlightSegment[],
+        spinnerProfile: false
     },
     reducers: {
-        load: (state, action) => {
-            state.value = action.payload;
+        loadLaunch: (state, action: PayloadAction<LaunchInfo>) => {
+            state.launch = action.payload;
+            state.routesList = [];
+            state.route = null;
+            state.flights = null;
+            state.profile = [];
+        },
+        loadRouteList: (state, action: PayloadAction<RouteInfo[]>) => {
+            state.routesList = action.payload;
+            state.route = null;
+            state.flights = null;
+            state.profile = [];
+        },
+        clearRouteList: (state) => {
+            state.routesList = [];
+            state.route = null;
+            state.flights = null;
+            state.profile = [];
+        },
+        loadRoute: (state, action: PayloadAction<RouteInfo>) => {
+            state.route = action.payload;
+            state.flights = null;
+            state.profile = [];
+        },
+        clearRoute: (state) => {
+            state.route = null;
+            state.flights = null;
+            state.profile = [];
+        },
+        loadFlights: (state, action: PayloadAction<FlightInfo[]>) => {
+            state.flights = action.payload;
+            state.profile = [];
+        },
+        clearFlights: (state) => {
+            state.flights = [];
+            state.profile = [];
+        },
+        loadProfile: (state, action: PayloadAction<FlightSegment[]>) => {
+            state.profile = action.payload;
+        },
+        clearProfile: (state) => {
+            state.profile = [];
+        },
+        spinnerProfile: (state, action: PayloadAction<boolean>) => {
+            state.spinnerProfile = action.payload;
         }
     }
 });
@@ -65,13 +165,27 @@ export const routeSlice = createSlice({
 export const settingsSlice = createSlice({
     name: 'settings',
     initialState: {
-        value: {
-            mode: 'score'
-        } as Settings
-    },
+        mode: 'score',
+        category: {
+            A: true,
+            B: true,
+            C: true,
+            D: true,
+            K: true,
+            O: true,
+            bi: true
+        },
+        score: [true, true, true, true, true]
+    } as Settings,
     reducers: {
-        setMode: (state, action) => {
-            state.value.mode = action.payload;
+        setMode: (state, action: PayloadAction<Settings['mode']>) => {
+            state.mode = action.payload;
+        },
+        setCategory: (state, action: PayloadAction<{cat: typeof categoriesGlider[number]; val: boolean}>) => {
+            state.category[action.payload.cat] = action.payload.val;
+        },
+        setScoreGroup: (state, action: PayloadAction<{group: number; val: boolean}>) => {
+            state.score[action.payload.group] = action.payload.val;
         }
     }
 });
@@ -79,9 +193,7 @@ export const settingsSlice = createSlice({
 export const store = configureStore({
     reducer: {
         settings: settingsSlice.reducer,
-        launch: launchSlice.reducer,
-        routesList: routesListSlice.reducer,
-        route: routeSlice.reducer
+        flightData: flightData.reducer
     }
 });
 
