@@ -115,40 +115,31 @@ export const flightData = createSlice({
     reducers: {
         loadLaunch: (state, action: PayloadAction<LaunchInfo>) => {
             state.launch = action.payload;
-            state.routesList = [];
-            state.route = null;
-            state.flights = null;
-            state.profile = [];
+            flightData.actions.clearRouteList();
         },
         loadRouteList: (state, action: PayloadAction<RouteInfo[]>) => {
             state.routesList = action.payload;
-            state.route = null;
-            state.flights = null;
-            state.profile = [];
+            flightData.actions.clearRoute();
         },
         clearRouteList: (state) => {
             state.routesList = [];
-            state.route = null;
-            state.flights = null;
-            state.profile = [];
+            flightData.actions.clearRoute();
         },
         loadRoute: (state, action: PayloadAction<RouteInfo>) => {
             state.route = action.payload;
-            state.flights = null;
-            state.profile = [];
+            flightData.actions.clearFlights();
         },
         clearRoute: (state) => {
             state.route = null;
-            state.flights = null;
-            state.profile = [];
+            flightData.actions.clearFlights();
         },
         loadFlights: (state, action: PayloadAction<FlightInfo[]>) => {
             state.flights = action.payload;
-            state.profile = [];
+            flightData.actions.clearProfile();
         },
         clearFlights: (state) => {
             state.flights = [];
-            state.profile = [];
+            flightData.actions.clearProfile();
         },
         loadProfile: (state, action: PayloadAction<FlightSegment[]>) => {
             state.profile = action.payload;
