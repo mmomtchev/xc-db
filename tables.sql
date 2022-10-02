@@ -1,6 +1,7 @@
 DROP VIEW IF EXISTS route_info;
 DROP VIEW IF EXISTS launch_info;
 DROP VIEW IF EXISTS flight_info;
+DROP VIEW IF EXISTS route_debug;
 
 DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS point;
@@ -130,6 +131,11 @@ CREATE VIEW route_info AS
         COUNT(*) AS flights
     FROM flight NATURAL JOIN flight_extra WHERE route_id IS NOT NULL GROUP BY route_id;
 
+CREATE VIEW route_debug AS
+    SELECT flight.id as flight_id, route_info.id as route_id, flight_url,
+        great_circle(p1_lat, p1_lng, c1_lat, c1_lng) AS d1, great_circle(p2_lat, p2_lng, c2_lat, c2_lng) AS d2, great_circle(p3_lat, p3_lng, c3_lat, c3_lng) AS d3
+    FROM flight NATURAL JOIN flight_extra FULL JOIN route_info;
+
 CREATE VIEW launch_info AS
     SELECT launch_id AS id,
         AVG(launch_lat) AS lat, AVG(launch_lng) AS lng, SUM(score) AS score, COUNT(*) AS flights
@@ -140,5 +146,8 @@ CREATE VIEW flight_info AS
         flight.id AS id, launch_id, route_id,
         launch_point, landing_point, p1_point, p2_point, p3_point, e1_point, e2_point,
         launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng,
-        type, score, distance, category, glider, pilot_url, flight_url, pilot_name, date
-    FROM flight NATURAL LEFT JOIN flight_extra;
+        type, score, distance, category, glider, pilot_url, flight_url, pilot_name,
+        flight_extra.date,
+        wind.direction AS wind_direction
+    FROM flight NATURAL LEFT JOIN flight_extra 
+    JOIN wind ON (flight_extra.date = wind.date AND ROUND(flight_extra.launch_lat * 4)/4 = wind.lat AND ROUND(flight_extra.launch_lng * 4)/4 = wind.lng);

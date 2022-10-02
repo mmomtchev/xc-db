@@ -1,5 +1,6 @@
 import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
+import {FlightSegment} from '../lib/flight';
 
 export type LaunchInfo = {
     id: number;
@@ -8,6 +9,15 @@ export type LaunchInfo = {
     lng: number;
     flights: number;
     score: number;
+};
+
+export const categoriesGlider = ['A', 'B', 'C', 'D', 'O', 'K', 'bi'] as const;
+export const directionsWind = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] as const;
+export type categoryGlider = {
+    [Property in typeof categoriesGlider[number]]: boolean;
+};
+export type directionWind = {
+    [Property in typeof directionsWind[number]]: boolean;
 };
 
 export type RouteInfo = {
@@ -54,6 +64,7 @@ export type FlightInfo = {
     tp: number[][];
     launch: number[];
     ep: number[][];
+    windDirection: number;
 };
 
 export const SQLFlightInfo = (flight) =>
@@ -69,6 +80,7 @@ export const SQLFlightInfo = (flight) =>
         glider: flight.glider,
         distance: flight.distance,
         score: flight.score,
+        windDirection: flight.wind_direction,
         date: Date.parse(flight.date),
         tp: [
             [flight.p1_lng, flight.p1_lat],
@@ -82,24 +94,12 @@ export const SQLFlightInfo = (flight) =>
         ]
     } as FlightInfo);
 
-export const categoriesGlider = ['A', 'B', 'C', 'D', 'O', 'K', 'bi'] as const;
 export const categoriesScore = [{to: 50}, {from: 50, to: 100}, {from: 100, to: 200}, {from: 200, to: 300}, {from: 300}];
 export type Settings = {
     mode: 'score' | 'avg' | 'flights';
-    category: {
-        [Property in typeof categoriesGlider[number]]: boolean;
-    };
+    category: categoryGlider;
+    wind: directionWind;
     score: boolean[];
-};
-
-export type FlightSegment = {
-    d: number;
-    start: number;
-    finish: number;
-    avg: number[];
-    min: number[];
-    max: number[];
-    terrain: number[];
 };
 
 export const flightData = createSlice({
@@ -175,6 +175,16 @@ export const settingsSlice = createSlice({
             O: true,
             bi: true
         },
+        wind: {
+            N: true,
+            NE: true,
+            E: true,
+            SE: true,
+            S: true,
+            SO: true,
+            O: true,
+            NO: true
+        },
         score: [true, true, true, true, true]
     } as Settings,
     reducers: {
@@ -183,6 +193,9 @@ export const settingsSlice = createSlice({
         },
         setCategory: (state, action: PayloadAction<{cat: typeof categoriesGlider[number]; val: boolean}>) => {
             state.category[action.payload.cat] = action.payload.val;
+        },
+        setWind: (state, action: PayloadAction<{wind: typeof directionsWind[number]; val: boolean}>) => {
+            state.wind[action.payload.wind] = action.payload.val;
         },
         setScoreGroup: (state, action: PayloadAction<{group: number; val: boolean}>) => {
             state.score[action.payload.group] = action.payload.val;

@@ -2,15 +2,14 @@ import * as path from 'path';
 import express from 'express';
 import cors from 'cors';
 import gdal from 'gdal-async';
-import GeographicLib from 'geographiclib';
 
-import config from './conf';
 import * as db from './db';
-import interpolate from '../lib/interpolate';
+import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
+import config from '../config.json';
+import {terrainUnderPath} from '../lib/dem';
 
 const app = express();
 app.use(cors());
-const geod = GeographicLib.Geodesic.WGS84;
 
 app.get('/launch/list', async (req, res) => {
     const r = await db.query(
@@ -100,21 +99,29 @@ app.get('/route/launch/:launch', async (req, res) => {
 });
 
 // Produce an aggregated vertical profile of all flights on a route
-app.get('/point/route/:route/launch/:launch', async (req, res) => {
-    const triPoints = ['e1', 'p1', 'p2', 'p3', 'e2'];
-
-    const flights = await db.query(
-        'SELECT * from flight_info WHERE launch_id = ? AND route_id = ? ORDER BY score DESC',
-        [req.params.launch, req.params.route]
-    );
-    const flight_segments = [];
+app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (req, res) => {
+    const flights =
+        req.params.launch !== undefined
+            ? await db.query('SELECT * from flight_info WHERE launch_id = ? AND route_id = ? ORDER BY score DESC', [
+                  req.params.launch,
+                  req.params.route
+              ])
+            : await db.query('SELECT * from flight_info WHERE route_id = ? ORDER BY score DESC', [req.params.route]);
+    const flight_segments: Point[][][] = [];
     {
         // This one can return tens, even hundreds of MBs of data - so no JOINs
-        const points = await db.query(
-            'SELECT flight.id as flight_id, point.id, alt' +
-                ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE launch_id = ? AND route_id = ?',
-            [req.params.launch, req.params.route]
-        );
+        const points =
+            req.params.launch !== undefined
+                ? await db.query(
+                      'SELECT flight.id as flight_id, point.id, alt' +
+                          ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE launch_id = ? AND route_id = ?',
+                      [req.params.launch, req.params.route]
+                  )
+                : await db.query(
+                      'SELECT flight.id as flight_id, point.id, alt' +
+                          ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE route_id = ?',
+                      [req.params.route]
+                  );
         const flight_points = {};
         for (let i = 0; i < flights.length; i++) {
             flight_points[flights[i]['id']] = [];
@@ -124,14 +131,7 @@ app.get('/point/route/:route/launch/:launch', async (req, res) => {
         }
         for (const id of Object.keys(flight_points)) {
             const f = flights.find((x) => x['id'] == id);
-            const segments = [];
-            for (let i = 0; i < triPoints.length - 1; i++)
-                segments.push(
-                    flight_points[id]
-                        .slice(f[`${triPoints[i]}_point`], f[`${triPoints[i + 1]}_point`] + 1)
-                        .map((x) => x['alt'])
-                );
-            flight_segments.push(segments);
+            flight_segments.push(triSegmentFlight(f, flight_points[id]));
         }
     }
     const best = flights[0];
@@ -140,50 +140,48 @@ app.get('/point/route/:route/launch/:launch', async (req, res) => {
     console.log('route', route);
     console.log('flight_points', flight_segments);
 
-    // Place the 3 TPs of the best flight on the 512 point linear scale
-    const segments = [];
-    let distance = 0;
-    for (let i = 0; i < triPoints.length - 1; i++) {
-        const d =
-            geod.Inverse(
-                best[`${triPoints[i]}_lat`],
-                best[`${triPoints[i]}_lng`],
-                best[`${triPoints[i + 1]}_lat`],
-                best[`${triPoints[i + 1]}_lng`]
-            ).s12 / 1000;
-        distance += d;
-        segments[i] = {d};
-    }
-
-    const step = distance / config.tracklog.points;
-    console.log('step', step);
-    let start = 0;
-    let current_distance = 0;
-    for (let i = 0; i < triPoints.length - 1; i++) {
-        current_distance += segments[i].d;
-        const finish = Math.round(current_distance / step);
-        segments[i].start = start;
-        segments[i].finish = finish;
-        start = finish;
-    }
-    console.log('segments', distance, best['distance'], segments);
+    // Place the 3 TPs of the best flight on the 1024 point linear scale
+    const segments = triScaleSegments(best);
+    console.log('segments', best['distance'], segments);
 
     // Fill each segment
     for (let i = 0; i < triPoints.length - 1; i++) {
-        segments[i].avg = Array(segments[i].finish - segments[i].start).fill(0);
+        segments[i].alt = Array(segments[i].finish - segments[i].start).fill(0);
         segments[i].min = Array(segments[i].finish - segments[i].start).fill(Infinity);
         segments[i].max = Array(segments[i].finish - segments[i].start).fill(-Infinity);
         for (const f of flight_segments) {
             const seg = interpolate(f[i], segments[i].finish - segments[i].start);
             for (const p in seg) {
-                segments[i].avg[p] += seg[p];
-                segments[i].min[p] = Math.min(segments[i].min[p], seg[p]);
-                segments[i].max[p] = Math.max(segments[i].max[p], seg[p]);
+                segments[i].alt[p] += seg[p].alt;
+                segments[i].min[p] = Math.min(segments[i].min[p], seg[p].alt);
+                segments[i].max[p] = Math.max(segments[i].max[p], seg[p].alt);
             }
         }
-        for (const p in segments[i].avg) {
-            segments[i].avg[p] = Math.round(segments[i].avg[p] / flights.length);
+        for (const p in segments[i].alt) {
+            segments[i].alt[p] = Math.round(segments[i].alt[p] / flights.length);
         }
+    }
+
+    res.json(segments);
+});
+
+app.get('/point/flight/:flight', async (req, res) => {
+    const flight = (await db.query('SELECT * from flight_info WHERE id = ?', [req.params.flight]))[0];
+    const points = await db.query(
+        'SELECT flight.id as flight_id, point.id, alt, lat, lng' +
+            ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE flight.id = ?',
+        [req.params.flight]
+    );
+    const flight_points = triSegmentFlight(flight, points);
+    const segments = triScaleSegments(flight);
+
+    for (let i = 0; i < triPoints.length - 1; i++) {
+        const seg = interpolate(flight_points[i], segments[i].finish - segments[i].start);
+        await terrainUnderPath(seg);
+        segments[i].alt = seg.map((x) => x.alt);
+        segments[i].terrain = seg.map((x) => x.terrain);
+        segments[i].lat = seg.map((x) => x.lat);
+        segments[i].lng = seg.map((x) => x.lng);
     }
 
     res.json(segments);

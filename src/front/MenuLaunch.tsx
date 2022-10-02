@@ -6,7 +6,7 @@ import Info from './Info';
 export function Launch() {
     const launch = useSelector((state) => state.flightData.launch);
     const dispatch = useDispatch();
-    if (!launch) return <div></div>;
+    if (!launch) return <div className='infobox launch m-2'>Choissisez un décollage sur la carte</div>;
 
     return (
         <div

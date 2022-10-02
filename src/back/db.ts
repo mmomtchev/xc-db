@@ -1,6 +1,6 @@
 import * as mysql from 'mysql';
 
-import config from './conf';
+import config from '../config.json';
 
 let db: mysql.Connection;
 

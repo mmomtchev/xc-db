@@ -11,19 +11,14 @@ async function main() {
     for (const band of ds.bands) {
         const meta = band.getMetadata();
         const data = band.pixels.readArray();
-        if (!buffer[meta.GRIB_VALID_TIME])
-            buffer[meta.GRIB_VALID_TIME] = {};
+        if (!buffer[meta.GRIB_VALID_TIME]) buffer[meta.GRIB_VALID_TIME] = {};
 
-        if (meta.GRIB_ELEMENT === 'U')
-            buffer[meta.GRIB_VALID_TIME].u = data;
-        else if (meta.GRIB_ELEMENT === 'V')
-            buffer[meta.GRIB_VALID_TIME].v = data;
-        else
-            throw new Error(`Invalid element ${meta}`);
+        if (meta.GRIB_ELEMENT === 'U') buffer[meta.GRIB_VALID_TIME].u = data;
+        else if (meta.GRIB_ELEMENT === 'V') buffer[meta.GRIB_VALID_TIME].v = data;
+        else throw new Error(`Invalid element ${meta}`);
 
         if (buffer[meta.GRIB_VALID_TIME].u && buffer[meta.GRIB_VALID_TIME].v) {
             const date = new Date(+meta.GRIB_VALID_TIME * 1000);
-            //date.setUTCHours(0, 0, 0, 0);
             console.log(`Writing ${date}`);
             const points = [];
             for (let y = 0; y < data.shape[0]; y++)
@@ -37,10 +32,10 @@ async function main() {
 
                     points.push([lat, lng, date, speed, dir]);
                 }
-            await db.query('INSERT INTO wind (lat, lng, date, speed, direction) VALUES ?', points);
+            await db.query('INSERT INTO wind (lat, lng, date, speed, direction) VALUES ?', [points]);
             delete buffer[meta.GRIB_VALID_TIME];
         }
     }
 }
 
-main();
+main().then(() => db.close());

@@ -9,6 +9,7 @@ import iconLaunch from './svg/icon-paraglide.svg';
 import 'ol/ol.css';
 import {useDispatch, LaunchInfo, useSelector, Settings, flightData} from './store';
 import MapRoute from './MapRoute';
+import MapTrack from './MapTrack';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const reader = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -54,6 +55,7 @@ export function Map() {
     const settings = useSelector((state) => state.settings);
     const routes = useSelector((state) => state.flightData.routesList);
     const route = useSelector((state) => state.flightData.route);
+    const segments = useSelector((state) => state.flightData.profile);
 
     const click = React.useCallback(
         (ev: RFeatureUIEvent) => {
@@ -63,7 +65,8 @@ export function Map() {
                 .then((res) => res.json())
                 .then((json: LaunchInfo) => {
                     dispatch(flightData.actions.loadLaunch(json));
-                });
+                })
+                .catch((e) => console.error(e));
         },
         [dispatch, settings.mode]
     );
@@ -113,6 +116,12 @@ export function Map() {
                     <MapRoute route={route} highlight={true} />
                 </RLayerVector>
             ) : null}
+            <RLayerVector zIndex={50}>
+                <RStyle.RStyle>
+                    <RStyle.RStroke color='blue' width={3} />
+                </RStyle.RStyle>
+                {segments.length > 0 ? <MapTrack /> : null}
+            </RLayerVector>
         </RMap>
     );
 }

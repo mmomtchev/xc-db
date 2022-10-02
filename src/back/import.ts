@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import IGCParser from 'igc-parser';
-import {solver, scoringRules as scoring, Solution} from 'igc-xc-score';
+import {solver, scoringRules as scoring} from 'igc-xc-score';
 
 import * as db from './db';
 
@@ -28,7 +28,7 @@ function triId(flight: IGCParser.IGCFile) {
     ];
 }
 
-function triHash(flight: IGCParser.IGCFile, score: Solution) {
+function triHash(flight: IGCParser.IGCFile) {
     const id = triId(flight);
     const hash = crypto.createHash('md5');
     hash.update(JSON.stringify(id));
@@ -42,22 +42,22 @@ async function importFlight(file: string) {
         console.log(`${file}: type code is ${desc.type}`);
         return;
     }
+
     const igcData = fs.readFileSync(file, 'utf8');
     const flight = IGCParser.parse(igcData, {lenient: true});
+    const hash = triHash(flight);
+    let r = await db.query('SELECT * FROM flight WHERE HEX(hash) = ?', [hash]);
+    if (r.length > 0) {
+        console.warn(`${file} : ${flight.pilot}/${flight.date}: ${hash} already present`);
+        return;
+    }
+
     const score = solver(flight, scoring.FFVL, {trim: true}).next().value;
 
     if (score.opt.scoring.code !== 'tri' && score.opt.scoring.code !== 'fai') {
         console.log(
             `!!!!!!!!!!!!! ${file}: type code is ${score.opt.scoring.code} / ${score.opt.scoring.name} / ${desc}`
         );
-        return;
-    }
-
-    const hash = triHash(flight, score);
-
-    let r = await db.query('SELECT * FROM flight WHERE HEX(hash) = ?', [hash]);
-    if (r.length > 0) {
-        console.warn(`${file} : ${score.score} points, ${hash} already present`);
         return;
     }
 
@@ -96,7 +96,7 @@ async function importFlight(file: string) {
             desc.pilot_url,
             desc.flight_url,
             desc.pilot_name,
-            flight.fixes[0].timestamp,
+            new Date(flight.fixes[0].timestamp),
             launchFix.latitude,
             launchFix.longitude,
             score.scoreInfo.tp[0].y,
@@ -130,4 +130,14 @@ async function importFlight(file: string) {
     console.log(`${file}: added ${points.length}/${flight.fixes.length} points from flight ${flightId}`);
 }
 
-importFlight(process.argv[2]).finally(() => db.close());
+async function main() {
+    let arg = 2;
+    while (process.argv[arg])
+        try {
+            await importFlight(process.argv[arg++]);
+        } catch (e) {
+            console.error(e);
+        }
+}
+
+main().finally(() => db.close());

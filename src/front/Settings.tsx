@@ -1,6 +1,14 @@
 import React from 'react';
 
-import {useSelector, useDispatch, Settings, settingsSlice, categoriesGlider, categoriesScore} from './store';
+import {
+    useSelector,
+    useDispatch,
+    Settings,
+    settingsSlice,
+    categoriesGlider,
+    categoriesScore,
+    directionsWind
+} from './store';
 
 function ModeButton(props: {label: string; mode: Settings['mode']}) {
     const mode = useSelector((state) => state.settings.mode);
@@ -32,6 +40,21 @@ function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
     );
 }
 
+function WindButton(props: {wind: typeof directionsWind[number]}) {
+    const setting = useSelector((state) => state.settings.wind[props.wind]);
+    const dispatch = useDispatch();
+
+    return (
+        <button
+            type='button'
+            className={`badge btn btn-primary ${setting ? 'active' : ''}`}
+            onClick={() => dispatch(settingsSlice.actions.setWind({wind: props.wind, val: !setting}))}
+        >
+            {props.wind}
+        </button>
+    );
+}
+
 function ScoreButton(props: {scoreGroup: number}) {
     const setting = useSelector((state) => state.settings.score[props.scoreGroup]);
     const dispatch = useDispatch();
@@ -57,6 +80,43 @@ export default function SettingsGroup() {
                 <ModeButton label='Score' mode='score' />
                 <ModeButton label='Vols' mode='flights' />
                 <ModeButton label='Moyenne' mode='avg' />
+            </div>
+            <div className='btn-group m-1 p-1' role='group'>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td align='left'>
+                                <WindButton wind='NO' />
+                            </td>
+                            <td>
+                                <WindButton wind='N' />
+                            </td>
+                            <td align='right'>
+                                <WindButton wind='NE' />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align='left'>
+                                <WindButton wind='O' />
+                            </td>
+                            <td>&#129517;</td>
+                            <td align='right'>
+                                <WindButton wind='E' />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td align='left'>
+                                <WindButton wind='SO' />
+                            </td>
+                            <td>
+                                <WindButton wind='S' />
+                            </td>
+                            <td align='right'>
+                                <WindButton wind='SE' />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
             <div className='btn-group m-1 p-1' role='group'>
                 {categoriesGlider.map((c, i) => (

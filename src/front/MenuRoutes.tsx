@@ -32,7 +32,7 @@ export function RouteList() {
         }
     }, [dispatch, launch?.id]);
 
-    if (launch?.id === undefined) return <div></div>;
+    if (launch?.id === undefined) return null;
 
     return (
         <div className='infobox route-list rounded-2 m-1 p-2 border'>
@@ -68,7 +68,7 @@ export function Route(props: {route: RouteInfo}) {
                 } else {
                     setInFlights(false);
                     dispatch(flightData.actions.loadRoute(props.route));
-                    fetch(`${process.env.REACT_APP_XCDB_SERVER}/flight/route/${props.route.id}/launch/${launch.id}`)
+                    fetch(`${process.env.REACT_APP_XCDB_SERVER}/flight/route/${props.route.id}`)
                         .then((res) => res.json())
                         .then((json) => {
                             console.log('Flights', props.route.id, launch.id, json);
@@ -77,17 +77,13 @@ export function Route(props: {route: RouteInfo}) {
                             dispatch(flightData.actions.loadFlights(flights));
                             dispatch(flightData.actions.spinnerProfile(true));
                         })
-                        .then(() =>
-                            fetch(
-                                `${process.env.REACT_APP_XCDB_SERVER}/point/route/${props.route.id}/launch/${launch.id}`
-                            )
-                        )
+                        .then(() => fetch(`${process.env.REACT_APP_XCDB_SERVER}/point/route/${props.route.id}`))
                         .then((res) => res.json())
                         .then((json) => {
                             console.log('Points', props.route.id, launch.id, json);
                             dispatch(flightData.actions.loadProfile(json));
-                            dispatch(flightData.actions.spinnerProfile(false));
-                        });
+                        })
+                        .finally(() => dispatch(flightData.actions.spinnerProfile(false)));
                 }
             }}
         >

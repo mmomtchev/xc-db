@@ -1,12 +1,15 @@
-import {fromLonLat} from 'ol/proj';
+import React, {useContext} from 'react';
+import {fromLonLat, getPointResolution} from 'ol/proj';
 import {Point, Circle, LineString} from 'ol/geom';
-import {RFeature, RStyle} from 'rlayers';
+import {RFeature, RStyle, RContext} from 'rlayers';
 
 import {RouteInfo} from './store';
-import React from 'react';
 
 export default function MapRoute(props: {route: RouteInfo; highlight?: boolean}) {
-    const radius = Math.max(3000, props.route.avgDistance * 0.05 * 1000);
+    const context = useContext(RContext);
+    const pointRes = getPointResolution(context.map.getView().getProjection(), 1, fromLonLat(props.route.tp[0]));
+    const radius = Math.max(3000, props.route.avgDistance * 0.05 * 1000) / pointRes;
+
     return (
         <React.Fragment>
             <RFeature geometry={new LineString([fromLonLat(props.route.tp[0]), fromLonLat(props.route.tp[1])])} />

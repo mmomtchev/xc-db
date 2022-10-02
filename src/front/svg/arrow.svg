@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewbox="0 0 16 16">
+<defs>
+	<marker id="arrowheadw" markerWidth="3" markerHeight="4" refX="0" refY="2" orient="auto">
+		<polygon stroke="none" fill="white" points="0 0, 3 2, 0 4" />
+	</marker>
+	<marker id="arrowheadb" markerWidth="3" markerHeight="4" refX="0" refY="2" orient="auto">
+		<polygon stroke="none" fill="black" points="0 0, 3 2, 0 4" />
+	</marker>
+</defs>
+<line x1="8" y1="0" x2="8" y2="10" stroke="white" stroke-width="2" marker-end="url(#arrowheadw)" />
+<line x1="8" y1="0.5" x2="8" y2="10.5" stroke="black" stroke-width="1.5" marker-end="url(#arrowheadb)" />
+</svg>

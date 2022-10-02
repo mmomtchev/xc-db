@@ -15,7 +15,7 @@ function App() {
                 <div className='d-flex flex-row justify-content-around'>
                     <div>
                         <h1>
-                            XC-DB <sup>beta</sup>
+                            XC-DB <sup>alpha</sup>
                         </h1>
                     </div>
                     <div></div>
