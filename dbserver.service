@@ -1,0 +1,14 @@
+[Unit]	
+Description=xcdb dbserver
+
+[Service]
+Type=simple
+WorkingDirectory=/home/xcdb
+ExecStart=/usr/bin/node 
+Restart=always
+RestartSec=10
+SyslogIdentifier=xcdbserver
+SyslogFacility=local3
+
+[Install]
+WantedBy=default.target
