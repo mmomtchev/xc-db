@@ -3,7 +3,23 @@ import native from 'rollup-plugin-natives';
 import copy from 'rollup-plugin-copy';
 import builtins from 'builtin-modules';
 import commonjs from '@rollup/plugin-commonjs';
+import replace from 'rollup-plugin-replace';
 import json from '@rollup/plugin-json';
+
+const shared = [
+    resolve({
+        preferBuiltins: true
+    }),
+    replace({
+        "require('readable-stream/transform')": "require('stream').Transform",
+        'require("readable-stream/transform")': 'require("stream").Transform',
+        'readable-stream': 'stream'
+    }),
+    commonjs({
+        include: ['node_modules/**', 'build/**']
+    }),
+    json()
+];
 
 export default [
     {
@@ -32,13 +48,7 @@ export default [
                     }
                 ]
             }),
-            resolve({
-                preferBuiltins: true
-            }),
-            commonjs({
-                include: ['node_modules/**', 'build/**']
-            }),
-            json()
+            ...shared
         ]
     },
     ...['classify.js', 'import.js', 'wind.js', 'launches.js'].map((f) => ({
@@ -50,14 +60,6 @@ export default [
             compact: true
         },
         external: builtins,
-        plugins: [
-            resolve({
-                preferBuiltins: true
-            }),
-            commonjs({
-                include: ['node_modules/**', 'build/**']
-            }),
-            json()
-        ]
+        plugins: shared
     }))
 ];
