@@ -11,6 +11,7 @@ export function FlightList() {
     const flights = useSelector((state) => state.flightData.flights);
     const routeId = useSelector((state) => state.flightData.routeId);
     const launchId = useSelector((state) => state.flightData.launchId);
+    const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
     const [inFlights, setInFlights] = React.useState(false);
     const flightsRef = React.useRef<HTMLDivElement>();
@@ -18,8 +19,8 @@ export function FlightList() {
     React.useEffect(() => {
         if (!routeId) return;
         const controller = new AbortController();
-        debug('loading flight/route', {launchId, routeId});
-        fetch(`${serverUrl}/flight/route/${routeId}?${fetchFilters}`, {signal: controller.signal})
+        debug('loading flight/route', {launchId, routeId, filters: fetchFilters(settings)});
+        fetch(`${serverUrl}/flight/route/${routeId}?${fetchFilters(settings)}`, {signal: controller.signal})
             .then((res) => res.json())
             .then((json) => {
                 debug('loaded flight/route', {launchId, routeId});
@@ -31,7 +32,7 @@ export function FlightList() {
             // eslint-disable-next-line no-console
             .catch((e) => console.error(e));
         return () => controller.abort();
-    }, [routeId, launchId, dispatch]);
+    }, [routeId, launchId, settings, dispatch]);
 
     return (
         <CSSTransition

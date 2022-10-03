@@ -7,9 +7,10 @@ import {RFeatureUIEvent, RLayerCluster, RLayerVector, RLayerVectorImage, RMap, R
 import iconLaunch from './svg/icon-paraglide.svg';
 
 import 'ol/ol.css';
-import {useDispatch, LaunchInfo, useSelector, Settings, flightData, serverUrl} from './store';
+import {useDispatch, useSelector, Settings, flightData, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
+import {fetchFilters} from './Settings';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const reader = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -87,7 +88,7 @@ export function Map() {
             <RLayerCluster
                 zIndex={20}
                 format={reader}
-                url={`${serverUrl}/launch/list`}
+                url={`${serverUrl}/geojson/launch/list?${fetchFilters(settings)}`}
                 onClick={click}
                 onPointerEnter={cursorPointer}
                 onPointerLeave={cursorDefault}

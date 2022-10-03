@@ -5,7 +5,7 @@ import {debug} from '../lib/debug';
 import Info from './Info';
 import {FlightList} from './MenuFlights';
 import {fetchFilters} from './Settings';
-import {RouteInfo, useDispatch, useSelector, SQLRouteInfo, SQLFlightInfo, flightData, serverUrl} from './store';
+import {RouteInfo, useDispatch, useSelector, SQLRouteInfo, flightData, serverUrl} from './store';
 
 import pacman from './svg/pacman.svg';
 
@@ -15,14 +15,15 @@ export function RouteList() {
 
     const launchId = useSelector((state) => state.flightData.launchId);
     const routes = useSelector((state) => state.flightData.routesList);
+    const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
 
     React.useEffect(() => {
         if (launchId) {
             setLoading(true);
             const controller = new AbortController();
-            debug('loading route/launch', launchId);
-            fetch(`${serverUrl}/route/launch/${launchId}?${fetchFilters}`, {signal: controller.signal})
+            debug('loading route/launch', launchId, settings);
+            fetch(`${serverUrl}/route/launch/${launchId}?${fetchFilters(settings)}`, {signal: controller.signal})
                 .then((res) => res.json())
                 .then((json) => {
                     debug('loaded route/launch', launchId, json);
@@ -35,7 +36,7 @@ export function RouteList() {
             setLoading(false);
             dispatch(flightData.actions.clearRouteList());
         }
-    }, [dispatch, launchId]);
+    }, [dispatch, launchId, settings]);
 
     if (launchId === null) return null;
 

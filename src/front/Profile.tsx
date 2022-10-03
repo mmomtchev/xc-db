@@ -60,6 +60,7 @@ function segmentTrack(
 export default function Profile() {
     const ref = React.useRef<HTMLCanvasElement>();
     const url = useSelector((state) => state.flightData.profileUrl);
+    const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
     const [spinner, setSpinner] = React.useState(false);
 
@@ -67,7 +68,7 @@ export default function Profile() {
         if (!url) return;
         const controller = new AbortController();
         setSpinner(true);
-        fetch(url + '?' + fetchFilters, {signal: controller.signal})
+        fetch(url + '?' + fetchFilters(settings), {signal: controller.signal})
             .then((res) => res.json())
             .then((segments: FlightSegment[]) => {
                 debug('loading point', url);
@@ -127,7 +128,7 @@ export default function Profile() {
             .catch((e) => console.error(e))
             .then(() => setSpinner(false));
         return () => controller.abort();
-    }, [dispatch, url]);
+    }, [dispatch, url, settings]);
 
     return (
         <React.Fragment>

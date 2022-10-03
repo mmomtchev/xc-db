@@ -8,13 +8,14 @@ import {fetchFilters} from './Settings';
 export function Launch() {
     const launch = useSelector((state) => state.flightData.launch);
     const launchId = useSelector((state) => state.flightData.launchId);
+    const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
 
     React.useEffect(() => {
         if (!launchId) return;
         const controller = new AbortController();
-        debug('loading launch', launchId);
-        fetch(`${serverUrl}/launch/${launchId}?${fetchFilters}`, {signal: controller.signal})
+        debug('loading launch', launchId, fetchFilters(settings));
+        fetch(`${serverUrl}/launch/${launchId}?${fetchFilters(settings)}`, {signal: controller.signal})
             .then((res) => res.json())
             .then((json: LaunchInfo) => {
                 debug('loaded launch', launchId);
@@ -26,7 +27,7 @@ export function Launch() {
                 console.error(e);
             });
         return () => controller.abort();
-    }, [dispatch, launchId]);
+    }, [dispatch, launchId, settings]);
 
     const onClick = React.useCallback(() => dispatch(flightData.actions.clearRoute()), [dispatch]);
 

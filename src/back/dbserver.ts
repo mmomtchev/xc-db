@@ -12,33 +12,51 @@ import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 const app = express();
 app.use(cors());
 
-function filters(req: Request): string {
+function filters(req: Request, table?: string): string {
+    const selector = table ? `${table}.` : '';
     const clauses: string[] = [];
     for (const p of Object.keys(req.query)) {
         switch (p) {
             case 'wind':
-                for (const wind in directionsWind) {
-                    if (+req.query['wind'][wind] === 1)
-                        clauses.push(`(wind_direction + 22.5) % 360 BETWEEN ${+wind * 45} AND ${(+wind + 1) * 45}`);
+                {
+                    const windClauses = [];
+                    for (const wind in directionsWind) {
+                        if (+req.query['wind'][wind] === 1)
+                            windClauses.push(
+                                `(${selector}wind_direction + 22.5) % 360 BETWEEN ${+wind * 45} AND ${(+wind + 1) * 45}`
+                            );
+                    }
+                    clauses.push(`( ${windClauses.join(' OR ')} )`);
                 }
                 break;
             case 'score':
-                for (const group in categoriesScore) {
-                    if (+req.query['score'][group] === 1)
-                        clauses.push(
-                            `score BETWEEN ${categoriesScore[group].from || 0} AND ${categoriesScore[group].to || 1e6}`
-                        );
+                {
+                    const scoreClauses = [];
+                    for (const group in categoriesScore) {
+                        if (+req.query['score'][group] === 1)
+                            scoreClauses.push(
+                                `${selector}score BETWEEN ${categoriesScore[group].from || 0} AND ${
+                                    categoriesScore[group].to || 1e6
+                                }`
+                            );
+                    }
+                    clauses.push(`( ${scoreClauses.join(' OR ')} )`);
                 }
                 break;
             case 'cat':
-                for (const cat in categoriesGlider) {
-                    if (+req.query['cat'][cat] === 1) clauses.push(`category = '${categoriesGlider[cat]}'`);
+                {
+                    const categoryClauses = [];
+                    for (const cat in categoriesGlider) {
+                        if (+req.query['cat'][cat] === 1)
+                            categoryClauses.push(`${selector}category = '${categoriesGlider[cat]}'`);
+                    }
+                    clauses.push(`( ${categoryClauses.join(' OR ')} )`);
                 }
                 break;
         }
     }
 
-    return clauses.length > 0 ? 'HAVING ' + clauses.join(' OR ') : '';
+    return clauses.length > 0 ? clauses.join(' AND ') : '';
 }
 
 function ordering(req: Request): string {
@@ -53,11 +71,11 @@ function ordering(req: Request): string {
     }
 }
 
-// This one returns GeoJSON
-app.get('/launch/list', async (req, res) => {
+app.get('/geojson/launch/list', async (req, res) => {
     const r = await db.poolQuery(
-        'SELECT launch_info.id as id, count(flight.launch_id) as flights, sum(flight.score) as score, lat, lng' +
-            ' FROM launch_info LEFT JOIN flight ON (launch_info.id = flight.launch_id)' +
+        'SELECT launch_info.id as id, count(flight_info.launch_id) as flights, sum(flight_info.score) as score, lat, lng' +
+            ' FROM launch_info LEFT JOIN flight_info ON (launch_info.id = flight_info.launch_id)' +
+            ` WHERE ${filters(req, 'flight_info')}` +
             ' GROUP BY launch_info.id HAVING flights > 0 ORDER BY score DESC'
     );
     const geojson = {
@@ -100,7 +118,7 @@ app.get('/launch/:id', async (req, res) => {
 });
 
 app.get('/flight/list', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info ${filters(req)} ORDER BY SCORE LIMIT 1000`);
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE ${filters(req)} ORDER BY SCORE LIMIT 1000`);
     res.json(r);
 });
 
@@ -110,7 +128,7 @@ app.get('/flight/:id', async (req, res) => {
 });
 
 app.get('/flight/launch/:launch', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE launch_id = ? ${filters(req)} ORDER BY SCORE`, [
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE launch_id = ? AND ${filters(req)} ORDER BY SCORE`, [
         req.params.launch
     ]);
     res.json(r);
@@ -118,29 +136,32 @@ app.get('/flight/launch/:launch', async (req, res) => {
 
 app.get('/flight/route/:route/launch/:launch', async (req, res) => {
     const r = await db.poolQuery(
-        `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? ${filters(req)} ORDER BY SCORE`,
+        `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? AND ${filters(req)} ORDER BY SCORE`,
         [req.params.route, req.params.launch]
     );
     res.json(r);
 });
 
 app.get('/flight/route/:route', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE route_id = ? ${filters(req)} ORDER BY SCORE`, [
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE route_id = ? AND ${filters(req)} ORDER BY SCORE`, [
         req.params.route
     ]);
     res.json(r);
 });
 
 app.get('/route/list', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM route_info ${filters(req)} ${ordering(req)} LIMIT 1000`);
+    const r = await db.poolQuery(
+        'SELECT route_info.*, count(*) AS flights_selected FROM route_info JOIN flight_info' +
+            ` WHERE ${filters(req, 'flight_info')} GROUP BY route_info.id ${ordering(req)} LIMIT 1000`
+    );
     res.json(r);
 });
 
 app.get('/route/launch/:launch', async (req, res) => {
     const r = await db.poolQuery(
-        'SELECT *,count(*) AS flights_selected' +
+        'SELECT route_info.*, count(*) AS flights_selected' +
             ' FROM flight_info JOIN route_info ON (flight_info.route_id = route_info.id)' +
-            ` WHERE launch_id = ? GROUP BY route_id ${filters(req)} ${ordering(req)}`,
+            ` WHERE launch_id = ? AND ${filters(req)} GROUP BY route_id ${ordering(req)}`,
         [req.params.launch]
     );
     res.json(r);
@@ -150,11 +171,13 @@ app.get('/route/launch/:launch', async (req, res) => {
 app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (req, res) => {
     const flights =
         req.params.launch !== undefined
-            ? await db.poolQuery(`SELECT * from flight_info WHERE launch_id = ? AND route_id = ? ${filters(req)}`, [
+            ? await db.poolQuery(`SELECT * from flight_info WHERE launch_id = ? AND route_id = ? AND ${filters(req)}`, [
                   req.params.launch,
                   req.params.route
               ])
-            : await db.poolQuery(`SELECT * from flight_info WHERE route_id = ? ${filters(req)}`, [req.params.route]);
+            : await db.poolQuery(`SELECT * from flight_info WHERE route_id = ? AND ${filters(req)}`, [
+                  req.params.route
+              ]);
     if (flights.length === 0) return res.json([]);
     const flight_segments: Point[][][] = [];
     {
@@ -164,14 +187,13 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
                 ? await db.poolQuery(
                       'SELECT flight_info.id as flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
-                          ' WHERE launch_id = ? AND route_id = ?' +
-                          ` ${filters(req)}`,
+                          ` WHERE launch_id = ? AND route_id = ? AND ${filters(req, 'flight_info')}`,
                       [req.params.launch, req.params.route]
                   )
                 : await db.poolQuery(
                       'SELECT flight_info.id as flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
-                          ` WHERE route_id = ? ${filters(req)}`,
+                          ` WHERE route_id = ? AND ${filters(req)}`,
                       [req.params.route]
                   );
         const flight_points = {};

@@ -16,7 +16,7 @@ export function fetchFilters(settings: Settings): string {
 
     let score = '';
     for (const s in categoriesScore)
-        if (settings.category[categoriesGlider[s]]) score += '1';
+        if (settings.score[s]) score += '1';
         else score += '0';
 
     return `&wind=${wind}&cat=${cat}&score=${score}&order=${settings.mode}`;
