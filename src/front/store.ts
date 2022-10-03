@@ -3,7 +3,9 @@ import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDi
 import {FlightSegment} from '../lib/flight';
 import {categoriesGlider, categoryGlider, directionsWind, directionWind} from '../lib/types';
 
-export const serverUrl = `${process.env.REACT_APP_XCDB_SERVER || 'http://localhost:8040'}`;
+export const serverUrl = `${
+    process.env.REACT_APP_XCDB_SERVER || (process.env.NODE_ENV === 'development' ? 'http://localhost:8040' : '/api')
+}`;
 
 export type LaunchInfo = {
     id: number;
