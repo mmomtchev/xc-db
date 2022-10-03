@@ -1,17 +1,41 @@
 import React from 'react';
 
-import {flightData, useDispatch, useSelector} from './store';
+import {flightData, LaunchInfo, serverUrl, useDispatch, useSelector} from './store';
 import Info from './Info';
+import {debug} from '../lib/debug';
+import {fetchFilters} from './Settings';
 
 export function Launch() {
     const launch = useSelector((state) => state.flightData.launch);
+    const launchId = useSelector((state) => state.flightData.launchId);
     const dispatch = useDispatch();
+
+    React.useEffect(() => {
+        if (!launchId) return;
+        const controller = new AbortController();
+        debug('loading launch', launchId);
+        fetch(`${serverUrl}/launch/${launchId}?${fetchFilters}`, {signal: controller.signal})
+            .then((res) => res.json())
+            .then((json: LaunchInfo) => {
+                debug('loaded launch', launchId);
+                dispatch(flightData.actions.loadLaunch(json));
+            })
+            .catch((e) => {
+                dispatch(flightData.actions.clearRouteList());
+                // eslint-disable-next-line no-console
+                console.error(e);
+            });
+        return () => controller.abort();
+    }, [dispatch, launchId]);
+
+    const onClick = React.useCallback(() => dispatch(flightData.actions.clearRoute()), [dispatch]);
+
     if (!launch) return <div className='infobox launch m-2'>Choissisez un décollage sur la carte</div>;
 
     return (
         <div
             className='infobox launch d-flex flex-column justify-content-start rounded-2 m-1 p-2 text-bg-dark'
-            onClick={() => dispatch(flightData.actions.clearRoute())}
+            onClick={onClick}
         >
             <p className='fw-bold'>{launch.name || `Déco ${launch.id.toString()}`}</p>
             <Info label='Vols déclarés' text={launch.flights.toString()} />

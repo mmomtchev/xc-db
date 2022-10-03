@@ -7,7 +7,7 @@ import {RFeatureUIEvent, RLayerCluster, RLayerVector, RLayerVectorImage, RMap, R
 import iconLaunch from './svg/icon-paraglide.svg';
 
 import 'ol/ol.css';
-import {useDispatch, LaunchInfo, useSelector, Settings, flightData} from './store';
+import {useDispatch, LaunchInfo, useSelector, Settings, flightData, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 
@@ -61,18 +61,13 @@ export function Map() {
         (ev: RFeatureUIEvent) => {
             const all = ev.target.get('features') as Feature[];
             const f = all.reduce((a, x) => (getValue(settings.mode, x) > getValue(settings.mode, a) ? x : a), all[0]);
-            fetch(`${process.env.REACT_APP_XCDB_SERVER}/launch/${f.get('id')}`)
-                .then((res) => res.json())
-                .then((json: LaunchInfo) => {
-                    dispatch(flightData.actions.loadLaunch(json));
-                })
-                .catch((e) => console.error(e));
+            dispatch(flightData.actions.setLaunch(f.get('id')));
         },
         [dispatch, settings.mode]
     );
 
     const style = React.useCallback(
-        (feature, resoltuion) => {
+        (feature, _) => {
             let v = 0;
             if (feature.get('features')) {
                 v = feature
@@ -92,7 +87,7 @@ export function Map() {
             <RLayerCluster
                 zIndex={20}
                 format={reader}
-                url={`${process.env.REACT_APP_XCDB_SERVER}/launch/list`}
+                url={`${serverUrl}/launch/list`}
                 onClick={click}
                 onPointerEnter={cursorPointer}
                 onPointerLeave={cursorDefault}
@@ -104,9 +99,7 @@ export function Map() {
                 <RStyle.RStyle>
                     <RStyle.RStroke color='#0000FF40' width={1} />
                 </RStyle.RStyle>
-                {routes.map((r, i) => (
-                    <MapRoute key={i} route={r} />
-                ))}
+                {React.useMemo(() => routes.map((r, i) => <MapRoute key={i} route={r} />), [routes])}
             </RLayerVectorImage>
             {route ? (
                 <RLayerVector zIndex={30}>

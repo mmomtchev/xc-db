@@ -117,7 +117,7 @@ async function run(element: 'launch' | 'route', ids: number[]) {
         for (const r of affected) {
             const more = await recluster(element, r);
             if (more.length === 0) continue;
-            console.log(`Affected routes: ${more}`);
+            console.log(`Affected ${element}s: ${more}`);
             next.push(...more);
         }
         console.log('--');

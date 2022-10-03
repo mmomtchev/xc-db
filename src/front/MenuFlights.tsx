@@ -1,19 +1,57 @@
-import React from 'react';
+import React, {useCallback} from 'react';
 import {windSVG} from '../lib/wind-svg';
+import {CSSTransition} from 'react-transition-group';
 
-import {useSelector, FlightInfo, useDispatch, flightData, directionsWind} from './store';
+import {useSelector, FlightInfo, useDispatch, flightData, SQLFlightInfo, serverUrl} from './store';
+import {directionsWind} from '../lib/types';
+import {debug} from '../lib/debug';
+import {fetchFilters} from './Settings';
 
-export const FlightList = React.forwardRef((_, ref: React.ForwardedRef<HTMLDivElement>) => {
+export function FlightList() {
     const flights = useSelector((state) => state.flightData.flights);
+    const routeId = useSelector((state) => state.flightData.routeId);
+    const launchId = useSelector((state) => state.flightData.launchId);
+    const dispatch = useDispatch();
+    const [inFlights, setInFlights] = React.useState(false);
+    const flightsRef = React.useRef<HTMLDivElement>();
+
+    React.useEffect(() => {
+        if (!routeId) return;
+        const controller = new AbortController();
+        debug('loading flight/route', {launchId, routeId});
+        fetch(`${serverUrl}/flight/route/${routeId}?${fetchFilters}`, {signal: controller.signal})
+            .then((res) => res.json())
+            .then((json) => {
+                debug('loaded flight/route', {launchId, routeId});
+                const flights = json.map(SQLFlightInfo);
+                dispatch(flightData.actions.loadFlights(flights));
+                setInFlights(true);
+                dispatch(flightData.actions.setProfile(`${serverUrl}/point/route/${routeId}`));
+            })
+            // eslint-disable-next-line no-console
+            .catch((e) => console.error(e));
+        return () => controller.abort();
+    }, [routeId, launchId, dispatch]);
 
     return (
-        <div ref={ref} className='infobox flight-list'>
-            {flights.map((f, i) => (
-                <Flight key={i} flight={f} />
-            ))}
-        </div>
+        <CSSTransition
+            nodeRef={flightsRef}
+            in={inFlights}
+            timeout={300}
+            classNames='animated-list'
+            unmountOnExit
+            onExited={() => {
+                dispatch(flightData.actions.clearRoute());
+            }}
+        >
+            <div ref={flightsRef} className='infobox flight-list'>
+                {flights.map((f, i) => (
+                    <Flight key={i} flight={f} />
+                ))}
+            </div>
+        </CSSTransition>
     );
-});
+}
 
 export function Flight(props: {flight: FlightInfo}) {
     const launch = useSelector((state) => state.flightData.launch);
@@ -22,18 +60,13 @@ export function Flight(props: {flight: FlightInfo}) {
     return (
         <div
             className='infobox flight d-flex flex-column text-bg-dark border rounded-1 p-1'
-            onClick={(e) => {
-                e.stopPropagation();
-                dispatch(flightData.actions.spinnerProfile(true));
-                fetch(`${process.env.REACT_APP_XCDB_SERVER}/point/flight/${props.flight.id}`)
-                    .then((res) => res.json())
-                    .then((json) => {
-                        console.log('Load points', props.flight.id);
-                        dispatch(flightData.actions.loadProfile(json));
-                    })
-                    .catch((e) => console.error(e))
-                    .then(() => dispatch(flightData.actions.spinnerProfile(false)));
-            }}
+            onClick={useCallback(
+                (e) => {
+                    e.stopPropagation();
+                    dispatch(flightData.actions.setProfile(`${serverUrl}/point/flight/${props.flight.id}`));
+                },
+                [dispatch, props.flight.id]
+            )}
         >
             <a
                 className='pilot fw-bold mr-1 text-light'
@@ -46,15 +79,25 @@ export function Flight(props: {flight: FlightInfo}) {
             </a>
             <div className='d-flex flex-row justify-content-between badge'>
                 <div className='fw-bold'>
-                    {directionsWind[Math.floor(((props.flight.windDirection + 22.5) % 360) / 45)]}
-                    &nbsp;
-                    <svg
-                        width={16}
-                        height={16}
-                        dangerouslySetInnerHTML={{
-                            __html: windSVG({direction: props.flight.windDirection, inner: 'white', outer: 'white'})
-                        }}
-                    />
+                    {props.flight.windDirection !== null ? (
+                        <span>
+                            {directionsWind[Math.floor(((props.flight.windDirection + 22.5) % 360) / 45)]}
+                            &nbsp;
+                            <svg
+                                width={16}
+                                height={16}
+                                dangerouslySetInnerHTML={{
+                                    __html: windSVG({
+                                        direction: props.flight.windDirection,
+                                        inner: 'white',
+                                        outer: 'white'
+                                    })
+                                }}
+                            />
+                        </span>
+                    ) : (
+                        <span></span>
+                    )}
                 </div>
                 <div className='fw-bold'>{new Date(props.flight.date).toDateString()}</div>
             </div>

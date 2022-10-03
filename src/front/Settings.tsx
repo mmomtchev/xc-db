@@ -1,14 +1,26 @@
 import React from 'react';
 
-import {
-    useSelector,
-    useDispatch,
-    Settings,
-    settingsSlice,
-    categoriesGlider,
-    categoriesScore,
-    directionsWind
-} from './store';
+import {useSelector, useDispatch, Settings, settingsSlice} from './store';
+import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
+
+export function fetchFilters(settings: Settings): string {
+    let wind = '';
+    for (const w in directionsWind)
+        if (settings.wind[directionsWind[w]]) wind += '1';
+        else wind += '0';
+
+    let cat = '';
+    for (const c in categoriesGlider)
+        if (settings.category[categoriesGlider[c]]) cat += '1';
+        else cat += '0';
+
+    let score = '';
+    for (const s in categoriesScore)
+        if (settings.category[categoriesGlider[s]]) score += '1';
+        else score += '0';
+
+    return `&wind=${wind}&cat=${cat}&score=${score}&order=${settings.mode}`;
+}
 
 function ModeButton(props: {label: string; mode: Settings['mode']}) {
     const mode = useSelector((state) => state.settings.mode);

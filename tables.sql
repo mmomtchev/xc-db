@@ -14,8 +14,10 @@ DROP TABLE IF EXISTS launch_official;
 DROP FUNCTION IF EXISTS sup;
 DROP FUNCTION IF EXISTS great_circle;
 
--- Great circle distance - more than enough for distances of less than 5km
+-- Great circle distance - more than enough for distances of less than 5km with 10m precision
 -- (no need to optimize the SQRT - it is far less expensive than the rest)
+-- (yes, MySQL has native support for geography types
+-- but it is very ill-suited for this application)
 DELIMITER //
 CREATE FUNCTION great_circle ( lat0 FLOAT, lng0 FLOAT, lat1 FLOAT, lng1 FLOAT )
 RETURNS FLOAT
@@ -28,7 +30,7 @@ BEGIN
     SET lat_m = (RADIANS(lat0) + RADIANS(lat1)) / 2;
     SET lng_d = RADIANS(lng0) - RADIANS(lng1);
 
-    RETURN 6371.009 * SQRT(POWER(lng_d, 2) + POWER(COS(lat_m) * lat_d, 2));
+    RETURN 6371.009 * SQRT(POWER(lat_d, 2) + POWER(COS(lat_m) * lng_d, 2));
 END; //
 
 CREATE FUNCTION sup ( a FLOAT, b FLOAT )

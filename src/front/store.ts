@@ -1,6 +1,9 @@
 import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
 import {FlightSegment} from '../lib/flight';
+import {categoriesGlider, categoryGlider, directionsWind, directionWind} from '../lib/types';
+
+export const serverUrl = `${process.env.REACT_APP_XCDB_SERVER || 'http://localhost:8040'}`;
 
 export type LaunchInfo = {
     id: number;
@@ -11,19 +14,10 @@ export type LaunchInfo = {
     score: number;
 };
 
-export const categoriesGlider = ['A', 'B', 'C', 'D', 'O', 'K', 'bi'] as const;
-export const directionsWind = ['N', 'NE', 'E', 'SE', 'S', 'SO', 'O', 'NO'] as const;
-export type categoryGlider = {
-    [Property in typeof categoriesGlider[number]]: boolean;
-};
-export type directionWind = {
-    [Property in typeof directionsWind[number]]: boolean;
-};
-
 export type RouteInfo = {
     id: number;
     flights: number;
-    flightsLaunch: number;
+    flightsSelected: number;
     maxScore: number;
     avgScore: number;
     avgDistance: number;
@@ -36,7 +30,7 @@ export const SQLRouteInfo = (route) =>
         id: route.id,
         launch_id: route.launch_id,
         flights: route.flights,
-        flightsLaunch: route.flights_launch,
+        flightsSelected: route.flights_selected,
         maxScore: route.max_score,
         avgScore: route.avg_score,
         maxDistance: route.max_distance,
@@ -94,7 +88,6 @@ export const SQLFlightInfo = (flight) =>
         ]
     } as FlightInfo);
 
-export const categoriesScore = [{to: 50}, {from: 50, to: 100}, {from: 100, to: 200}, {from: 200, to: 300}, {from: 300}];
 export type Settings = {
     mode: 'score' | 'avg' | 'flights';
     category: categoryGlider;
@@ -106,49 +99,60 @@ export const flightData = createSlice({
     name: 'flightData',
     initialState: {
         launch: null as LaunchInfo,
+        launchId: null as number,
         routesList: [] as RouteInfo[],
         route: null as RouteInfo,
+        routeId: null as number,
         flights: [] as FlightInfo[],
-        profile: [] as FlightSegment[],
-        spinnerProfile: false
+        profileUrl: null as string,
+        profile: [] as FlightSegment[]
     },
     reducers: {
         loadLaunch: (state, action: PayloadAction<LaunchInfo>) => {
             state.launch = action.payload;
-            flightData.actions.clearRouteList();
+        },
+        setLaunch: (state, action: PayloadAction<number>) => {
+            state.launchId = action.payload;
+            flightData.caseReducers.clearRouteList(state);
         },
         loadRouteList: (state, action: PayloadAction<RouteInfo[]>) => {
             state.routesList = action.payload;
-            flightData.actions.clearRoute();
+            flightData.caseReducers.clearRoute(state);
         },
         clearRouteList: (state) => {
             state.routesList = [];
-            flightData.actions.clearRoute();
+            flightData.caseReducers.clearRoute(state);
+        },
+        setRoute: (state, action: PayloadAction<number>) => {
+            state.routeId = action.payload;
+            flightData.caseReducers.clearFlights(state);
         },
         loadRoute: (state, action: PayloadAction<RouteInfo>) => {
             state.route = action.payload;
-            flightData.actions.clearFlights();
+            flightData.caseReducers.clearFlights(state);
         },
         clearRoute: (state) => {
             state.route = null;
-            flightData.actions.clearFlights();
+            state.routeId = null;
+            flightData.caseReducers.clearFlights(state);
         },
         loadFlights: (state, action: PayloadAction<FlightInfo[]>) => {
             state.flights = action.payload;
-            flightData.actions.clearProfile();
+            flightData.caseReducers.clearProfile(state);
         },
         clearFlights: (state) => {
             state.flights = [];
-            flightData.actions.clearProfile();
+            flightData.caseReducers.clearProfile(state);
+        },
+        setProfile: (state, action: PayloadAction<string>) => {
+            state.profileUrl = action.payload;
         },
         loadProfile: (state, action: PayloadAction<FlightSegment[]>) => {
             state.profile = action.payload;
         },
         clearProfile: (state) => {
+            state.profileUrl = null;
             state.profile = [];
-        },
-        spinnerProfile: (state, action: PayloadAction<boolean>) => {
-            state.spinnerProfile = action.payload;
         }
     }
 });

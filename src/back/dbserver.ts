@@ -1,5 +1,5 @@
 import * as path from 'path';
-import express from 'express';
+import express, {Request} from 'express';
 import cors from 'cors';
 import gdal from 'gdal-async';
 
@@ -7,14 +7,58 @@ import * as db from './db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
 import config from '../config.json';
 import {terrainUnderPath} from '../lib/dem';
+import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 
 const app = express();
 app.use(cors());
 
+function filters(req: Request): string {
+    const clauses: string[] = [];
+    for (const p of Object.keys(req.query)) {
+        switch (p) {
+            case 'wind':
+                for (const wind in directionsWind) {
+                    if (+req.query['wind'][wind] === 1)
+                        clauses.push(`(wind_direction + 22.5) % 360 BETWEEN ${+wind * 45} AND ${(+wind + 1) * 45}`);
+                }
+                break;
+            case 'score':
+                for (const group in categoriesScore) {
+                    if (+req.query['score'][group] === 1)
+                        clauses.push(
+                            `score BETWEEN ${categoriesScore[group].from || 0} AND ${categoriesScore[group].to || 1e6}`
+                        );
+                }
+                break;
+            case 'cat':
+                for (const cat in categoriesGlider) {
+                    if (+req.query['cat'][cat] === 1) clauses.push(`category = '${categoriesGlider[cat]}'`);
+                }
+                break;
+        }
+    }
+
+    return clauses.length > 0 ? 'HAVING ' + clauses.join(' OR ') : '';
+}
+
+function ordering(req: Request): string {
+    switch (req.query.order) {
+        case 'score':
+            return ' ORDER BY score DESC';
+        default:
+        case 'flights':
+            return ' ORDER BY flights DESC';
+        case 'avg':
+            return ' ORDER BY score * flights DESC';
+    }
+}
+
+// This one returns GeoJSON
 app.get('/launch/list', async (req, res) => {
-    const r = await db.query(
-        'SELECT launch_info.id as id, count(flight.launch_id) as flights, sum(flight.score) as score, lat, lng ' +
-            'FROM launch_info LEFT JOIN flight ON (launch_info.id = flight.launch_id) GROUP BY launch_info.id HAVING flights > 0 ORDER BY score DESC'
+    const r = await db.poolQuery(
+        'SELECT launch_info.id as id, count(flight.launch_id) as flights, sum(flight.score) as score, lat, lng' +
+            ' FROM launch_info LEFT JOIN flight ON (launch_info.id = flight.launch_id)' +
+            ' GROUP BY launch_info.id HAVING flights > 0 ORDER BY score DESC'
     );
     const geojson = {
         type: 'FeatureCollection',
@@ -37,14 +81,14 @@ app.get('/launch/list', async (req, res) => {
 
 app.get('/launch/search/:str', async (req, res) => {
     const query = `%${req.params.str}%`;
-    const r = await db.query('SELECT * FROM launch WHERE name LIKE ? OR sub LIKE ? LIMIT 100', [query, query]);
+    const r = await db.poolQuery('SELECT * FROM launch WHERE name LIKE ? OR sub LIKE ? LIMIT 1000', [query, query]);
     res.json(r);
 });
 
 app.get('/launch/:id', async (req, res) => {
-    const launch = (await db.query('SELECT * FROM launch_info WHERE id = ?', [req.params.id]))[0];
+    const launch = (await db.poolQuery('SELECT * FROM launch_info WHERE id = ?', [req.params.id]))[0];
     if (!launch) return res.json({});
-    const name = await db.query(
+    const name = await db.poolQuery(
         'SELECT name, great_circle(lat, lng, ?, ?) AS launch_distance FROM launch_official ORDER BY launch_distance ASC LIMIT 1',
         [launch['lat'], launch['lng']]
     );
@@ -56,43 +100,47 @@ app.get('/launch/:id', async (req, res) => {
 });
 
 app.get('/flight/list', async (req, res) => {
-    const r = await db.query('SELECT * FROM flight_info ORDER BY score DESC LIMIT 100');
+    const r = await db.poolQuery(`SELECT * FROM flight_info ${filters(req)} ORDER BY SCORE LIMIT 1000`);
     res.json(r);
 });
 
 app.get('/flight/:id', async (req, res) => {
-    const r = await db.query('SELECT * FROM flight_info WHERE id = ?', [req.params.id]);
+    const r = await db.poolQuery('SELECT * FROM flight_info WHERE id = ?', [req.params.id]);
     res.json(r);
 });
 
 app.get('/flight/launch/:launch', async (req, res) => {
-    const r = await db.query('SELECT * FROM flight_info WHERE launch_id = ? ORDER BY score DESC', [req.params.launch]);
-    res.json(r);
-});
-
-app.get('/flight/route/:route/launch/:launch', async (req, res) => {
-    const r = await db.query('SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? ORDER BY score DESC', [
-        req.params.route,
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE launch_id = ? ${filters(req)} ORDER BY SCORE`, [
         req.params.launch
     ]);
     res.json(r);
 });
 
+app.get('/flight/route/:route/launch/:launch', async (req, res) => {
+    const r = await db.poolQuery(
+        `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? ${filters(req)} ORDER BY SCORE`,
+        [req.params.route, req.params.launch]
+    );
+    res.json(r);
+});
+
 app.get('/flight/route/:route', async (req, res) => {
-    const r = await db.query('SELECT * FROM flight_info WHERE route_id = ? ORDER BY score DESC', [req.params.route]);
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE route_id = ? ${filters(req)} ORDER BY SCORE`, [
+        req.params.route
+    ]);
     res.json(r);
 });
 
 app.get('/route/list', async (req, res) => {
-    const r = await db.query('SELECT * FROM route_info ORDER BY flights DESC LIMIT 100');
+    const r = await db.poolQuery(`SELECT * FROM route_info ${filters(req)} ${ordering(req)} LIMIT 1000`);
     res.json(r);
 });
 
 app.get('/route/launch/:launch', async (req, res) => {
-    const r = await db.query(
-        'SELECT *,count(*) AS flights_launch' +
-            ' FROM flight JOIN route_info ON (flight.route_id = route_info.id)' +
-            ' WHERE launch_id = ? GROUP BY route_id ORDER BY flights_launch DESC',
+    const r = await db.poolQuery(
+        'SELECT *,count(*) AS flights_selected' +
+            ' FROM flight_info JOIN route_info ON (flight_info.route_id = route_info.id)' +
+            ` WHERE launch_id = ? GROUP BY route_id ${filters(req)} ${ordering(req)}`,
         [req.params.launch]
     );
     res.json(r);
@@ -102,24 +150,28 @@ app.get('/route/launch/:launch', async (req, res) => {
 app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (req, res) => {
     const flights =
         req.params.launch !== undefined
-            ? await db.query('SELECT * from flight_info WHERE launch_id = ? AND route_id = ? ORDER BY score DESC', [
+            ? await db.poolQuery(`SELECT * from flight_info WHERE launch_id = ? AND route_id = ? ${filters(req)}`, [
                   req.params.launch,
                   req.params.route
               ])
-            : await db.query('SELECT * from flight_info WHERE route_id = ? ORDER BY score DESC', [req.params.route]);
+            : await db.poolQuery(`SELECT * from flight_info WHERE route_id = ? ${filters(req)}`, [req.params.route]);
+    if (flights.length === 0) return res.json([]);
     const flight_segments: Point[][][] = [];
     {
         // This one can return tens, even hundreds of MBs of data - so no JOINs
         const points =
             req.params.launch !== undefined
-                ? await db.query(
-                      'SELECT flight.id as flight_id, point.id, alt' +
-                          ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE launch_id = ? AND route_id = ?',
+                ? await db.poolQuery(
+                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                          ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
+                          ' WHERE launch_id = ? AND route_id = ?' +
+                          ` ${filters(req)}`,
                       [req.params.launch, req.params.route]
                   )
-                : await db.query(
-                      'SELECT flight.id as flight_id, point.id, alt' +
-                          ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE route_id = ?',
+                : await db.poolQuery(
+                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                          ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
+                          ` WHERE route_id = ? ${filters(req)}`,
                       [req.params.route]
                   );
         const flight_points = {};
@@ -135,14 +187,9 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
         }
     }
     const best = flights[0];
-    const route = (await db.query('SELECT * from route_info WHERE id = ?', [req.params.route]))[0];
-    console.log('flights', flights);
-    console.log('route', route);
-    console.log('flight_points', flight_segments);
 
     // Place the 3 TPs of the best flight on the 1024 point linear scale
     const segments = triScaleSegments(best);
-    console.log('segments', best['distance'], segments);
 
     // Fill each segment
     for (let i = 0; i < triPoints.length - 1; i++) {
@@ -152,9 +199,10 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
         for (const f of flight_segments) {
             const seg = interpolate(f[i], segments[i].finish - segments[i].start);
             for (const p in seg) {
-                segments[i].alt[p] += seg[p].alt;
-                segments[i].min[p] = Math.min(segments[i].min[p], seg[p].alt);
-                segments[i].max[p] = Math.max(segments[i].max[p], seg[p].alt);
+                const alt = seg[p] ? seg[p].alt : 0;
+                segments[i].alt[p] += alt;
+                segments[i].min[p] = Math.min(segments[i].min[p], alt);
+                segments[i].max[p] = Math.max(segments[i].max[p], alt);
             }
         }
         for (const p in segments[i].alt) {
@@ -166,8 +214,8 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
 });
 
 app.get('/point/flight/:flight', async (req, res) => {
-    const flight = (await db.query('SELECT * from flight_info WHERE id = ?', [req.params.flight]))[0];
-    const points = await db.query(
+    const flight = (await db.poolQuery('SELECT * from flight_info WHERE id = ?', [req.params.flight]))[0];
+    const points = await db.poolQuery(
         'SELECT flight.id as flight_id, point.id, alt, lat, lng' +
             ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE flight.id = ?',
         [req.params.flight]

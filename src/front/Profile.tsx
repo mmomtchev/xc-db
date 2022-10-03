@@ -1,10 +1,13 @@
 import React from 'react';
 
 import round from '../lib/round';
-import {useSelector} from './store';
+import {flightData, useDispatch, useSelector} from './store';
 
 import pacman from './svg/pacman.svg';
 import config from '../config.json';
+import {FlightSegment} from '../lib/flight';
+import {debug} from '../lib/debug';
+import {fetchFilters} from './Settings';
 
 function tpLine(ctx: CanvasRenderingContext2D, height: number, label: string, x: number) {
     ctx.strokeStyle = '#333333';
@@ -56,75 +59,86 @@ function segmentTrack(
 
 export default function Profile() {
     const ref = React.useRef<HTMLCanvasElement>();
-    const segments = useSelector((state) => state.flightData.profile);
-    const spinner = useSelector((state) => state.flightData.spinnerProfile);
+    const url = useSelector((state) => state.flightData.profileUrl);
+    const dispatch = useDispatch();
+    const [spinner, setSpinner] = React.useState(false);
 
     React.useEffect(() => {
-        if (ref.current) {
-            const ctx = ref.current.getContext('2d');
-            const height = ref.current.height;
-            ctx.clearRect(0, 0, ref.current.width, height);
-            if (segments.length > 0) {
-                console.log('drawing', height, segments);
+        if (!url) return;
+        const controller = new AbortController();
+        setSpinner(true);
+        fetch(url + '?' + fetchFilters, {signal: controller.signal})
+            .then((res) => res.json())
+            .then((segments: FlightSegment[]) => {
+                debug('loading point', url);
+                dispatch(flightData.actions.loadProfile(segments));
+                const ctx = ref.current.getContext('2d');
+                const height = ref.current.height;
+                ctx.clearRect(0, 0, ref.current.width, height);
+                if (segments.length > 0) {
+                    debug('loaded point - drawing', segments);
 
-                // Draw the TP lines
-                const points = ['TP1', 'TP2', 'TP3', ''];
-                tpLine(ctx, height, 'Bouclage', segments[0].start);
-                for (let s = 0; s < 4; s++) {
-                    tpLine(ctx, height, points[s], segments[s].finish);
-                }
+                    // Draw the TP lines
+                    const points = ['TP1', 'TP2', 'TP3', ''];
+                    tpLine(ctx, height, 'Bouclage', segments[0].start);
+                    for (let s = 0; s < 4; s++) {
+                        tpLine(ctx, height, points[s], segments[s].finish);
+                    }
 
-                // Draw the altitude lines
-                const altMax = Math.min(
-                    round(
-                        Math.max(
-                            Math.max.apply(null, segments.map((s) => s.max).flat()) || -Infinity,
-                            Math.max.apply(null, segments.map((s) => s.alt).flat()) || -Infinity
-                        ) + 500,
-                        1000
-                    ),
-                    5000
-                );
-                const altMin = Math.max(
-                    round(
-                        Math.min(
-                            Math.min.apply(null, segments.map((s) => s.min).flat()) || Infinity,
-                            Math.min.apply(null, segments.map((s) => s.alt).flat()) || Infinity
-                        ) - 500,
-                        1000
-                    ),
-                    0
-                );
-                const altScaling = (x: number) => height * ((altMax - x) / altMax);
-                for (let i = 0; i <= altMax; i += 500) {
-                    altLine(ctx, altScaling, i);
-                }
+                    // Draw the altitude lines
+                    const altMax = Math.min(
+                        round(
+                            Math.max(
+                                Math.max.apply(null, segments.map((s) => s.max).flat()) || -Infinity,
+                                Math.max.apply(null, segments.map((s) => s.alt).flat()) || -Infinity
+                            ) + 500,
+                            1000
+                        ),
+                        5000
+                    );
+                    const altMin = Math.max(
+                        round(
+                            Math.min(
+                                Math.min.apply(null, segments.map((s) => s.min).flat()) || Infinity,
+                                Math.min.apply(null, segments.map((s) => s.alt).flat()) || Infinity
+                            ) - 500,
+                            1000
+                        ),
+                        0
+                    );
+                    const altScaling = (x: number) => height * ((altMax - x) / altMax);
+                    for (let i = 0; i <= altMax; i += 500) {
+                        altLine(ctx, altScaling, i);
+                    }
 
-                for (const s of segments) {
-                    ctx.strokeStyle = '#800000';
-                    if (s.min) segmentTrack(ctx, altScaling, s.start, s.min);
-                    if (s.max) segmentTrack(ctx, altScaling, s.start, s.max);
-                    ctx.strokeStyle = '#ff0000';
-                    if (s.alt) segmentTrack(ctx, altScaling, s.start, s.alt);
-                    ctx.fillStyle = '#333333';
-                    ctx.strokeStyle = '#000000';
-                    if (s.terrain) segmentTrack(ctx, altScaling, s.start, s.terrain, true);
+                    for (const s of segments) {
+                        ctx.strokeStyle = '#800000';
+                        if (s.min) segmentTrack(ctx, altScaling, s.start, s.min);
+                        if (s.max) segmentTrack(ctx, altScaling, s.start, s.max);
+                        ctx.strokeStyle = '#ff0000';
+                        if (s.alt) segmentTrack(ctx, altScaling, s.start, s.alt);
+                        ctx.fillStyle = '#333333';
+                        ctx.strokeStyle = '#000000';
+                        if (s.terrain) segmentTrack(ctx, altScaling, s.start, s.terrain, true);
+                    }
                 }
-            }
-        }
-    }, [segments]);
+            })
+            // eslint-disable-next-line no-console
+            .catch((e) => console.error(e))
+            .then(() => setSpinner(false));
+        return () => controller.abort();
+    }, [dispatch, url]);
 
     return (
         <React.Fragment>
             {spinner && <img className='profile' src={pacman} />}
-            {segments.length > 0 && (
-                <canvas
-                    className='profile'
-                    width={config.tracklog.points}
-                    height={config.tracklog.points / 2}
-                    ref={ref}
-                />
-            )}
+            <canvas
+                className='profile'
+                hidden={spinner}
+                width={config.tracklog.points}
+                height={config.tracklog.points / 2}
+                ref={ref}
+            />
         </React.Fragment>
     );
 }
