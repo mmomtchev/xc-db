@@ -160,9 +160,8 @@ export const flightData = createSlice({
     }
 });
 
-export const settingsSlice = createSlice({
-    name: 'settings',
-    initialState: {
+function initialSettings() {
+    const settings = {
         mode: 'score',
         category: {
             A: true,
@@ -184,19 +183,41 @@ export const settingsSlice = createSlice({
             NO: true
         },
         score: [true, true, true, true, true]
-    } as Settings,
+    } as Settings;
+
+    if (window.localStorage)
+        for (const setting of Object.keys(settings)) {
+            try {
+                const val = localStorage.getItem(setting);
+                if (val) settings[setting] = JSON.parse(val);
+            } catch (e) {
+                // eslint-disable-next-line no-console
+                console.error(e);
+            }
+        }
+
+    return settings;
+}
+
+export const settingsSlice = createSlice({
+    name: 'settings',
+    initialState: initialSettings(),
     reducers: {
         setMode: (state, action: PayloadAction<Settings['mode']>) => {
             state.mode = action.payload;
+            if (window.localStorage) localStorage.setItem('mode', JSON.stringify(state.mode));
         },
         setCategory: (state, action: PayloadAction<{cat: typeof categoriesGlider[number]; val: boolean}>) => {
             state.category[action.payload.cat] = action.payload.val;
+            if (window.localStorage) localStorage.setItem('category', JSON.stringify(state.category));
         },
         setWind: (state, action: PayloadAction<{wind: typeof directionsWind[number]; val: boolean}>) => {
             state.wind[action.payload.wind] = action.payload.val;
+            if (window.localStorage) localStorage.setItem('wind', JSON.stringify(state.wind));
         },
         setScoreGroup: (state, action: PayloadAction<{group: number; val: boolean}>) => {
             state.score[action.payload.group] = action.payload.val;
+            if (window.localStorage) localStorage.setItem('score', JSON.stringify(state.score));
         }
     }
 });
