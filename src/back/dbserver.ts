@@ -5,7 +5,6 @@ import gdal from 'gdal-async';
 
 import * as db from './db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
-import config from '../config.json';
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 
@@ -263,7 +262,7 @@ app.get('/height', async (req, res) => {
     const file = `${lat > 0 ? 'N' : 'S'}${Math.floor(lat).toFixed(0)}${lng > 0 ? 'E' : 'W'}${Math.floor(lng)
         .toFixed(0)
         .padStart(3, '0')}.hgt`;
-    const ds = gdal.open(path.resolve(config.dbserver.srtm_dir, file));
+    const ds = gdal.open(path.resolve(db.config.dbserver.srtm_dir, file));
     const xform = new gdal.CoordinateTransformation(gdal.SpatialReference.fromEPSG(4326), ds);
     const pt = xform.transformPoint(lng, lat);
     const data = ds.bands.get(1).pixels.read(Math.round(pt.x), Math.round(pt.y), 1, 1);
@@ -276,6 +275,6 @@ app.use((err, req, res, next) => {
     res.status(500).send('Invalid request');
 });
 
-app.listen(config.dbserver.port, () => {
-    console.log(`xcdb dbserver listening on port ${config.dbserver.port}`);
+app.listen(db.config.dbserver.port, () => {
+    console.log(`xcdb dbserver listening on port ${db.config.dbserver.port}`);
 });

@@ -1,6 +1,8 @@
+import * as path from 'path';
+import * as fs from 'fs';
 import * as mysql from 'mysql';
 
-import config from '../config.json';
+export const config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'config.json'), 'utf-8'));
 
 let db: mysql.Connection;
 let pool: mysql.Pool;

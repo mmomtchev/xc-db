@@ -2,8 +2,10 @@ import React from 'react';
 import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
+import {boundingExtent} from 'ol/extent';
 import {RFeatureUIEvent, RLayerCluster, RLayerVector, RLayerVectorImage, RMap, ROSM, RStyle} from 'rlayers';
 
+import config from '../config.json';
 import iconLaunch from './svg/icon-paraglide.svg';
 
 import 'ol/ol.css';
@@ -14,6 +16,7 @@ import {fetchFilters} from './Settings';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const reader = new GeoJSON({featureProjection: 'EPSG:4326'});
+const extent = boundingExtent([fromLonLat(config.map.extent[0]), fromLonLat(config.map.extent[1])]);
 
 const iconSizes = [
     [0.15, 0.15],
@@ -83,7 +86,7 @@ export function Map() {
     );
 
     return (
-        <RMap className='map' initial={{center: Forclaz, zoom: 7}}>
+        <RMap className='map' initial={{center: Forclaz, zoom: 7}} extent={extent}>
             <ROSM />
             <RLayerCluster
                 zIndex={20}

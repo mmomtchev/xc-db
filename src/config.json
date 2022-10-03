@@ -9,6 +9,18 @@
         "port": 8040,
         "srtm_dir": "/home/mmom/velivole/dev/data/SRTM1/hgt/unzipped"
     },
+    "map": {
+        "extent": [
+            [
+                -5,
+                55
+            ],
+            [
+                10,
+                40
+            ]
+        ]
+    },
     "skylines": {
         "extent": [
             -5,
