@@ -13,7 +13,7 @@
         "start": "react-scripts start",
         "test": "echo \"Error: no test specified\" && exit 1",
         "deploy:front": "tar -C build -zcf - `cd build; ls *.png; ls favicon* index*` manifest.json robots.txt static | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -C www -zxvf -'",
-        "deploy:back": "tar -C build -zcf - prod deps lib | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'"
+        "deploy:back": "tar -C build -zcf - prod deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'"
     },
     "browserslist": {
         "production": [
