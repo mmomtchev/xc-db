@@ -12,8 +12,8 @@ function connect() {
         db = mysql.createConnection({
             database: config.db.db,
             host: config.db.host,
-            user: config.db.user
-            //password: config.db.pass
+            user: config.db.user,
+            password: config.db.pass
         });
 
         db.connect(function (err) {
@@ -29,8 +29,8 @@ function createPool() {
             connectionLimit: 4,
             database: config.db.db,
             host: config.db.host,
-            user: config.db.user
-            //password: config.db.pass
+            user: config.db.user,
+            password: config.db.pass
         });
     }
 }
