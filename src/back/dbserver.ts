@@ -125,7 +125,7 @@ app.get('/launch/:id', async (req, res) => {
 });
 
 app.get('/flight/list', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE ${filters(req)} ORDER BY SCORE LIMIT 1000`);
+    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE ${filters(req)} ORDER BY score DESC LIMIT 1000`);
     res.json(r);
 });
 
@@ -135,24 +135,26 @@ app.get('/flight/:id', async (req, res) => {
 });
 
 app.get('/flight/launch/:launch', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE launch_id = ? AND ${filters(req)} ORDER BY SCORE`, [
-        req.params.launch
-    ]);
+    const r = await db.poolQuery(
+        `SELECT * FROM flight_info WHERE launch_id = ? AND ${filters(req)} ORDER BY score DESC`,
+        [req.params.launch]
+    );
     res.json(r);
 });
 
 app.get('/flight/route/:route/launch/:launch', async (req, res) => {
     const r = await db.poolQuery(
-        `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? AND ${filters(req)} ORDER BY SCORE`,
+        `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? AND ${filters(req)} ORDER BY score DESC`,
         [req.params.route, req.params.launch]
     );
     res.json(r);
 });
 
 app.get('/flight/route/:route', async (req, res) => {
-    const r = await db.poolQuery(`SELECT * FROM flight_info WHERE route_id = ? AND ${filters(req)} ORDER BY SCORE`, [
-        req.params.route
-    ]);
+    const r = await db.poolQuery(
+        `SELECT * FROM flight_info WHERE route_id = ? AND ${filters(req)} ORDER BY score DESC`,
+        [req.params.route]
+    );
     res.json(r);
 });
 
