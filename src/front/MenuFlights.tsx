@@ -41,14 +41,12 @@ export function FlightList() {
             timeout={300}
             classNames='animated-list'
             unmountOnExit
-            onExited={() => {
+            onExited={React.useCallback(() => {
                 dispatch(flightData.actions.clearRoute());
-            }}
+            }, [dispatch])}
         >
             <div ref={flightsRef} className='infobox flight-list'>
-                {flights.map((f, i) => (
-                    <Flight key={i} flight={f} />
-                ))}
+                {React.useMemo(() => flights.map((f, i) => <Flight key={i} flight={f} />), [flights])}
             </div>
         </CSSTransition>
     );
