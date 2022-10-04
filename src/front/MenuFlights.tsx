@@ -103,11 +103,7 @@ export function Flight(props: {flight: FlightInfo}) {
             <div className='score d-flex flex-row justify-content-between'>
                 <span className='fw-bold'>{props.flight.category}</span>
                 &nbsp;
-                {props.flight.launch_id !== launch.id ? (
-                    <div className='border rounded-2'>déco différent</div>
-                ) : (
-                    <div></div>
-                )}
+                {props.flight.launch_id !== launch.id ? <del className='border rounded-2'>déco</del> : <div></div>}
                 &nbsp;
                 <span>{props.flight.glider}</span>
             </div>
