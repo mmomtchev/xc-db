@@ -3,6 +3,8 @@ import React from 'react';
 import {useSelector, useDispatch, Settings, settingsSlice} from './store';
 import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 
+import iconUncleSam from './jpg/uncle_sam.jpg';
+
 export function fetchFilters(settings: Settings): string {
     let wind = '';
     for (const w in directionsWind)
@@ -93,42 +95,50 @@ export default function SettingsGroup() {
                 <ModeButton label='Vols' mode='flights' />
                 <ModeButton label='Moyenne' mode='avg' />
             </div>
-            <div className='btn-group m-1 p-1' role='group'>
-                <table>
-                    <tbody>
-                        <tr>
-                            <td align='left'>
-                                <WindButton wind='NO' />
-                            </td>
-                            <td>
-                                <WindButton wind='N' />
-                            </td>
-                            <td align='right'>
-                                <WindButton wind='NE' />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td align='left'>
-                                <WindButton wind='O' />
-                            </td>
-                            <td>&#129517;</td>
-                            <td align='right'>
-                                <WindButton wind='E' />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td align='left'>
-                                <WindButton wind='SO' />
-                            </td>
-                            <td>
-                                <WindButton wind='S' />
-                            </td>
-                            <td align='right'>
-                                <WindButton wind='SE' />
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div className='d-flex flex-row justify-content-around'>
+                <div className='btn-group m-1 p-1' role='group'>
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td align='left'>
+                                    <WindButton wind='NO' />
+                                </td>
+                                <td>
+                                    <WindButton wind='N' />
+                                </td>
+                                <td align='right'>
+                                    <WindButton wind='NE' />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align='left'>
+                                    <WindButton wind='O' />
+                                </td>
+                                <td>&#129517;</td>
+                                <td align='right'>
+                                    <WindButton wind='E' />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align='left'>
+                                    <WindButton wind='SO' />
+                                </td>
+                                <td>
+                                    <WindButton wind='S' />
+                                </td>
+                                <td align='right'>
+                                    <WindButton wind='SE' />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div className='d-flex flex-column align-items-center'>
+                    <img height='80px' width='60px' src={iconUncleSam} />
+                    <small>
+                        <strong>TOI?</strong> T&apos;es un sponsor?
+                    </small>
+                </div>
             </div>
             <div className='btn-group m-1 p-1' role='group'>
                 {categoriesGlider.map((c, i) => (
