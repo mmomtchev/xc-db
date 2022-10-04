@@ -62,20 +62,22 @@ export default function Profile() {
     const url = useSelector((state) => state.flightData.profileUrl);
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
-    const [spinner, setSpinner] = React.useState(false);
+    const [spinner, setSpinner] = React.useState(0);
 
     React.useEffect(() => {
+        const ctx = ref.current.getContext('2d');
+        const height = ref.current.height;
+        ctx.clearRect(0, 0, ref.current.width, height);
         if (!url) return;
+
+        setSpinner((val) => val + 1);
+        debug('loading point', url);
         const controller = new AbortController();
-        setSpinner(true);
         fetch(url + '?' + fetchFilters(settings), {signal: controller.signal})
             .then((res) => res.json())
             .then((segments: FlightSegment[]) => {
-                debug('loading point', url);
+                debug('loaded point', url);
                 dispatch(flightData.actions.loadProfile(segments));
-                const ctx = ref.current.getContext('2d');
-                const height = ref.current.height;
-                ctx.clearRect(0, 0, ref.current.width, height);
                 if (segments.length > 0) {
                     debug('loaded point - drawing', segments);
 
@@ -126,16 +128,16 @@ export default function Profile() {
             })
             // eslint-disable-next-line no-console
             .catch((e) => console.error(e))
-            .then(() => setSpinner(false));
+            .then(() => setSpinner((val) => val - 1));
         return () => controller.abort();
     }, [dispatch, url, settings]);
 
     return (
         <React.Fragment>
-            {spinner && <img className='profile' src={pacman} />}
+            {spinner > 0 && <img className='profile' src={pacman} />}
             <canvas
                 className='profile'
-                hidden={spinner}
+                hidden={spinner > 0}
                 width={config.tracklog.points}
                 height={config.tracklog.points / 2}
                 ref={ref}
