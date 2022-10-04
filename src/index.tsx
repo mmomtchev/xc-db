@@ -1,20 +1,28 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.bundle.js';
 import './index.css';
 
 import App from './front/App';
-import {store} from './front/store';
+import {store, setRouter} from './front/store';
 import {Provider} from 'react-redux';
 
 import reportWebVitals from './front/reportWebVitals';
 
+const router = createBrowserRouter([
+    {
+        path: '/*',
+        element: <App />
+    }
+]);
+setRouter(router);
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <App />
+            <RouterProvider router={router} />
         </Provider>
     </React.StrictMode>
 );

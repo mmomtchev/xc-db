@@ -1,4 +1,5 @@
 import React from 'react';
+import {useNavigate} from 'react-router-dom';
 import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -55,19 +56,19 @@ function cursorDefault(ev) {
 }
 
 export function Map() {
-    const dispatch = useDispatch();
     const settings = useSelector((state) => state.settings);
     const routes = useSelector((state) => state.flightData.routesList);
     const route = useSelector((state) => state.flightData.route);
     const segments = useSelector((state) => state.flightData.profile);
 
+    const navigate = useNavigate();
     const click = React.useCallback(
         (ev: RFeatureUIEvent) => {
             const all = ev.target.get('features') as Feature[];
             const f = all.reduce((a, x) => (getValue(settings.mode, x) > getValue(settings.mode, a) ? x : a), all[0]);
-            dispatch(flightData.actions.setLaunch(f.get('id')));
+            navigate(`/launch/${f.get('id')}`);
         },
-        [dispatch, settings.mode]
+        [navigate, settings.mode]
     );
 
     const style = React.useCallback(

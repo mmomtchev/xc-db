@@ -1,4 +1,5 @@
 import React, {useCallback} from 'react';
+import {useMatch, useNavigate} from 'react-router-dom';
 import {windSVG} from '../lib/wind-svg';
 import {CSSTransition} from 'react-transition-group';
 
@@ -9,8 +10,9 @@ import {fetchFilters} from './Settings';
 
 export function FlightList() {
     const flights = useSelector((state) => state.flightData.flights);
-    const routeId = useSelector((state) => state.flightData.routeId);
-    const launchId = useSelector((state) => state.flightData.launchId);
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
+
     const settings = useSelector((state) => state.settings);
     const unrolled = useSelector((state) => state.flightData.routeUnrolled);
     const dispatch = useDispatch();
@@ -27,7 +29,6 @@ export function FlightList() {
                 const flights = json.map(SQLFlightInfo);
                 dispatch(flightData.actions.loadFlights(flights));
                 dispatch(flightData.actions.unrollRoute());
-                dispatch(flightData.actions.setProfileRoute(routeId));
             })
             // eslint-disable-next-line no-console
             .catch((e) => console.error(e));
@@ -54,14 +55,13 @@ export function FlightList() {
 
 export function Flight(props: {flight: FlightInfo}) {
     const launch = useSelector((state) => state.flightData.launch);
-    const profileId = useSelector((state) => state.flightData.profileId);
-    const dispatch = useDispatch();
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
+    const navigate = useNavigate();
     const active = React.useMemo(
-        () =>
-            profileId.id === props.flight.id && profileId.type === 'flight'
-                ? 'border border-4 border-primary'
-                : 'border',
-        [props.flight.id, profileId]
+        () => (props.flight.id === flightId ? 'border border-4 border-primary' : 'border'),
+        [props.flight.id, flightId]
     );
 
     return (
@@ -70,9 +70,9 @@ export function Flight(props: {flight: FlightInfo}) {
             onClick={useCallback(
                 (e) => {
                     e.stopPropagation();
-                    dispatch(flightData.actions.setProfileFlight(props.flight.id));
+                    navigate(`/launch/${launchId}/route/${routeId}/flight/${props.flight.id}`);
                 },
-                [dispatch, props.flight.id]
+                [props.flight.id, launchId, routeId, navigate]
             )}
         >
             <a

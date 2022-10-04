@@ -1,11 +1,12 @@
 import React from 'react';
+import {useMatch, useNavigate} from 'react-router-dom';
 import {CSSTransition} from 'react-transition-group';
-import {debug} from '../lib/debug';
 
 import Info from './Info';
 import {FlightList} from './MenuFlights';
 import {fetchFilters} from './Settings';
 import {RouteInfo, useDispatch, useSelector, SQLRouteInfo, flightData, serverUrl} from './store';
+import {debug} from '../lib/debug';
 
 import pacman from './svg/pacman.svg';
 
@@ -13,7 +14,7 @@ export function RouteList() {
     const routesRef = React.useRef(null);
     const [loading, setLoading] = React.useState(false);
 
-    const launchId = useSelector((state) => state.flightData.launchId);
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
     const routes = useSelector((state) => state.flightData.routesList);
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
@@ -56,7 +57,9 @@ export function RouteList() {
 }
 
 export function Route(props: {route: RouteInfo}) {
-    const routeId = useSelector((state) => state.flightData.routeId);
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const navigate = useNavigate();
     const dispatch = useDispatch();
 
     return (
@@ -64,17 +67,17 @@ export function Route(props: {route: RouteInfo}) {
             className='infobox route d-flex flex-column justify-content-start rounded-2 m-1 p-2 border'
             onClick={React.useCallback(() => {
                 if (routeId !== props.route.id) {
-                    dispatch(flightData.actions.setRoute(props.route.id));
+                    navigate(`/launch/${launchId}/route/${props.route.id}`);
                     dispatch(flightData.actions.loadRoute(props.route));
                 } else {
                     dispatch(flightData.actions.rollRoute());
                 }
-            }, [props.route, routeId, dispatch])}
+            }, [props.route, routeId, launchId, navigate, dispatch])}
         >
             <Info label='Score maximal' text={props.route.maxScore.toFixed(2)} />
             <Info label='Score moyen' text={props.route.avgScore.toFixed(2)} />
             <Info label='Vols' text={props.route.flights.toFixed(0)} />
-            <Info label='Dont affichés' text={props.route.flightsSelected.toFixed(0)} />
+            <Info label='Dont du déco/critères' text={props.route.flightsSelected.toFixed(0)} />
             {routeId === props.route.id && <FlightList />}
         </div>
     );

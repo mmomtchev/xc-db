@@ -1,4 +1,5 @@
 import React from 'react';
+import {useMatch} from 'react-router-dom';
 
 import {flightData, LaunchInfo, serverUrl, useDispatch, useSelector} from './store';
 import Info from './Info';
@@ -6,8 +7,8 @@ import {debug} from '../lib/debug';
 import {fetchFilters} from './Settings';
 
 export function Launch() {
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
     const launch = useSelector((state) => state.flightData.launch);
-    const launchId = useSelector((state) => state.flightData.launchId);
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
 

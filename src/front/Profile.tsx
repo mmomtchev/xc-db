@@ -1,4 +1,5 @@
 import React from 'react';
+import {useMatch} from 'react-router-dom';
 
 import round from '../lib/round';
 import {flightData, serverUrl, useDispatch, useSelector} from './store';
@@ -59,7 +60,8 @@ function segmentTrack(
 
 export default function Profile() {
     const ref = React.useRef<HTMLCanvasElement>();
-    const profileId = useSelector((state) => state.flightData.profileId);
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
     const [spinner, setSpinner] = React.useState(0);
@@ -68,11 +70,8 @@ export default function Profile() {
         const ctx = ref.current.getContext('2d');
         const height = ref.current.height;
         ctx.clearRect(0, 0, ref.current.width, height);
-        if (!profileId.type) return;
-        const url =
-            profileId.type === 'flight'
-                ? `${serverUrl}/point/flight/${profileId.id}`
-                : `${serverUrl}/point/route/${profileId.id}`;
+        if (!routeId) return;
+        const url = flightId ? `${serverUrl}/point/flight/${flightId}` : `${serverUrl}/point/route/${routeId}`;
 
         setSpinner((val) => val + 1);
         debug('loading point', url);
@@ -134,7 +133,7 @@ export default function Profile() {
             .catch((e) => console.error(e))
             .then(() => setSpinner((val) => val - 1));
         return () => controller.abort();
-    }, [dispatch, profileId, settings]);
+    }, [dispatch, routeId, flightId, settings]);
 
     return (
         <React.Fragment>

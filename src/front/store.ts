@@ -1,5 +1,6 @@
 import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
+import {Router} from '@remix-run/router';
 import {FlightSegment} from '../lib/flight';
 import {categoriesGlider, categoryGlider, directionsWind, directionWind} from '../lib/types';
 
@@ -97,26 +98,24 @@ export type Settings = {
     score: boolean[];
 };
 
+let router: Router;
+export function setRouter(r: Router) {
+    router = r;
+}
+
 export const flightData = createSlice({
     name: 'flightData',
     initialState: {
         launch: null as LaunchInfo,
-        launchId: null as number,
         routesList: [] as RouteInfo[],
         route: null as RouteInfo,
-        routeId: null as number,
         routeUnrolled: false,
         flights: [] as FlightInfo[],
-        profileId: {type: null as null | 'flight' | 'route', id: null as number},
         profile: [] as FlightSegment[]
     },
     reducers: {
         loadLaunch: (state, action: PayloadAction<LaunchInfo>) => {
             state.launch = action.payload;
-        },
-        setLaunch: (state, action: PayloadAction<number>) => {
-            state.launchId = action.payload;
-            flightData.caseReducers.clearRouteList(state);
         },
         loadRouteList: (state, action: PayloadAction<RouteInfo[]>) => {
             state.routesList = action.payload;
@@ -127,18 +126,15 @@ export const flightData = createSlice({
             state.routesList = [];
             flightData.caseReducers.clearRoute(state);
         },
-        setRoute: (state, action: PayloadAction<number>) => {
-            state.routeId = action.payload;
-            flightData.caseReducers.clearFlights(state);
-        },
         loadRoute: (state, action: PayloadAction<RouteInfo>) => {
             state.route = action.payload;
             flightData.caseReducers.clearFlights(state);
         },
         clearRoute: (state) => {
             state.route = null;
-            state.routeId = null;
             flightData.caseReducers.clearFlights(state);
+            if (state.launch?.id) router.navigate(`/launch/${state.launch.id}`);
+            else router.navigate('/');
         },
         rollRoute: (state) => {
             state.routeUnrolled = false;
@@ -154,18 +150,14 @@ export const flightData = createSlice({
             state.flights = [];
             flightData.caseReducers.clearProfile(state);
         },
-        setProfileFlight: (state, action: PayloadAction<number>) => {
-            state.profileId = {type: 'flight', id: action.payload};
-        },
-        setProfileRoute: (state, action: PayloadAction<number>) => {
-            state.profileId = {type: 'route', id: action.payload};
-        },
         loadProfile: (state, action: PayloadAction<FlightSegment[]>) => {
             state.profile = action.payload;
         },
         clearProfile: (state) => {
-            state.profileId = {type: null, id: null};
             state.profile = [];
+            if (state.route?.id) router.navigate(`/launch/${state.launch.id}/route/${state.route.id}`);
+            else if (state.launch?.id) router.navigate(`/launch/${state.launch.id}`);
+            else router.navigate('/');
         }
     }
 });
