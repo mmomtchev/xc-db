@@ -187,19 +187,18 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
               ]);
     if (flights.length === 0) return res.json([]);
     const flight_segments: Point[][][] = [];
-    let all: unknown[];
     {
         // This one can return tens, even hundreds of MBs of data - so no JOINs
         const points =
             req.params.launch !== undefined
                 ? await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt, lat, lng' +
+                      'SELECT flight_info.id as flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE launch_id = ? AND route_id = ? AND ${filters(req, 'flight_info')}`,
                       [req.params.launch, req.params.route]
                   )
                 : await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt, lat, lng' +
+                      'SELECT flight_info.id as flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE route_id = ? AND ${filters(req)}`,
                       [req.params.route]
@@ -215,7 +214,6 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
             const f = flights.find((x) => x['id'] == id);
             flight_segments.push(triSegmentFlight(f, flight_points[id]));
         }
-        all = points.map((p: Point) => ({lat: p.lat, lng: p.lng}));
     }
     const best = flights[0];
 
@@ -241,7 +239,7 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
         }
     }
 
-    res.json({segments});
+    res.json(segments);
 });
 
 app.get('/point/flight/:flight', async (req, res) => {

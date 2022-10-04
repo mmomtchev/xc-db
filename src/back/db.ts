@@ -39,7 +39,13 @@ export function query(sql, args?: unknown[]): Promise<unknown[]> {
     if (!db) connect();
 
     return new Promise((resolve, reject) => {
+        if (process.env.DEBUG) {
+            console.time(sql);
+        }
         const q = db.query(sql, args, (err, res) => {
+            if (process.env.DEBUG) {
+                console.timeEnd(sql);
+            }
             if (err) reject(err);
             resolve(res);
         });
@@ -54,13 +60,13 @@ export function poolQuery(sql, args?: unknown[]): Promise<unknown[]> {
         if (process.env.DEBUG) {
             console.time(sql);
         }
-        const q = pool.query(sql, args, (err, res) => {
+        pool.query(sql, args, (err, res) => {
+            if (process.env.DEBUG) {
+                console.timeEnd(sql);
+            }
             if (err) reject(err);
             resolve(res);
         });
-        if (process.env.DEBUG) {
-            console.timeEnd(sql);
-        }
     });
 }
 
