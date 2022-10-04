@@ -162,7 +162,7 @@ export const flightData = createSlice({
 
 function initialSettings() {
     const settings = {
-        mode: 'score',
+        mode: 'flights',
         category: {
             A: true,
             B: true,
