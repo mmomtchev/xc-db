@@ -51,11 +51,16 @@ export function poolQuery(sql, args?: unknown[]): Promise<unknown[]> {
     if (!pool) createPool();
 
     return new Promise((resolve, reject) => {
+        if (process.env.DEBUG) {
+            console.time(sql);
+        }
         const q = pool.query(sql, args, (err, res) => {
             if (err) reject(err);
             resolve(res);
         });
-        if (process.env.DEBUG) console.debug(q.sql);
+        if (process.env.DEBUG) {
+            console.timeEnd(sql);
+        }
     });
 }
 

@@ -1,6 +1,7 @@
 import * as path from 'path';
 import express, {Request} from 'express';
 import cors from 'cors';
+import responseTime from 'response-time';
 import gdal from 'gdal-async';
 
 import * as db from './db';
@@ -10,6 +11,13 @@ import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 
 const app = express();
 app.use(cors());
+if (process.env.DEBUG) {
+    app.use(
+        responseTime((req, res, time) => {
+            console.debug(req.method, req.url, time.toFixed(2) + 'ms');
+        })
+    );
+}
 
 function filters(req: Request, table?: string): string {
     const selector = table ? `${table}.` : '';
@@ -55,7 +63,7 @@ function filters(req: Request, table?: string): string {
         }
     }
 
-    return clauses.length > 0 ? clauses.join(' AND ') : '';
+    return clauses.length > 0 ? clauses.join(' AND ') : 'TRUE';
 }
 
 function ordering(req: Request): string {
@@ -179,18 +187,19 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
               ]);
     if (flights.length === 0) return res.json([]);
     const flight_segments: Point[][][] = [];
+    let all: unknown[];
     {
         // This one can return tens, even hundreds of MBs of data - so no JOINs
         const points =
             req.params.launch !== undefined
                 ? await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                      'SELECT flight_info.id as flight_id, point.id, alt, lat, lng' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE launch_id = ? AND route_id = ? AND ${filters(req, 'flight_info')}`,
                       [req.params.launch, req.params.route]
                   )
                 : await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                      'SELECT flight_info.id as flight_id, point.id, alt, lat, lng' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE route_id = ? AND ${filters(req)}`,
                       [req.params.route]
@@ -206,6 +215,7 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
             const f = flights.find((x) => x['id'] == id);
             flight_segments.push(triSegmentFlight(f, flight_points[id]));
         }
+        all = points.map((p: Point) => ({lat: p.lat, lng: p.lng}));
     }
     const best = flights[0];
 
@@ -219,19 +229,19 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
         segments[i].max = Array(segments[i].finish - segments[i].start).fill(-Infinity);
         for (const f of flight_segments) {
             const seg = interpolate(f[i], segments[i].finish - segments[i].start);
-            for (const p in seg) {
+            for (let p = 0; p < seg.length; p++) {
                 const alt = seg[p] ? seg[p].alt : 0;
                 segments[i].alt[p] += alt;
                 segments[i].min[p] = Math.min(segments[i].min[p], alt);
                 segments[i].max[p] = Math.max(segments[i].max[p], alt);
             }
         }
-        for (const p in segments[i].alt) {
+        for (let p = 0; p < segments[i].alt.length; p++) {
             segments[i].alt[p] = Math.round(segments[i].alt[p] / flights.length);
         }
     }
 
-    res.json(segments);
+    res.json({segments});
 });
 
 app.get('/point/flight/:flight', async (req, res) => {
