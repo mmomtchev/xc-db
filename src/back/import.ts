@@ -53,6 +53,7 @@ async function importFlight(file: string) {
     }
 
     const score = solver(flight, scoring.FFVL, {trim: true}).next().value;
+    const fixes = score.opt.flight.filtered;
 
     if (score.opt.scoring.code !== 'tri' && score.opt.scoring.code !== 'fai') {
         console.log(
@@ -63,7 +64,7 @@ async function importFlight(file: string) {
 
     await db.query('BEGIN');
     const launch = score.opt['launch'];
-    const launchFix = flight.fixes[launch];
+    const launchFix = fixes[launch];
     const landing = score.opt['landing'];
 
     r = await db.query(
@@ -96,7 +97,7 @@ async function importFlight(file: string) {
             desc.pilot_url,
             desc.flight_url,
             desc.pilot_name,
-            new Date(flight.fixes[0].timestamp),
+            new Date(fixes[0].timestamp),
             launchFix.latitude,
             launchFix.longitude,
             score.scoreInfo.tp[0].y,
@@ -114,7 +115,7 @@ async function importFlight(file: string) {
 
     const points = [];
     for (let fixId = score.opt['launch']; fixId <= score.opt['landing']; fixId++) {
-        const fix = flight.fixes[fixId];
+        const fix = fixes[fixId];
         if (!(fix.gpsAltitude || fix.pressureAltitude)) continue;
         points.push([
             fixId,
@@ -127,7 +128,7 @@ async function importFlight(file: string) {
     }
     await db.query('INSERT INTO point (id, flight_id, lat, lng, alt, time) VALUES ?', [points]);
     await db.query('COMMIT');
-    console.log(`${file}: added ${points.length}/${flight.fixes.length} points from flight ${flightId}`);
+    console.log(`${file}: added ${points.length}/${fixes.length} points from flight ${flightId}`);
 }
 
 async function main() {
