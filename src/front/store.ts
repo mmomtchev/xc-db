@@ -107,7 +107,7 @@ export const flightData = createSlice({
         routeId: null as number,
         routeUnrolled: false,
         flights: [] as FlightInfo[],
-        profileUrl: null as string,
+        profileId: {type: null as null | 'flight' | 'route', id: null as number},
         profile: [] as FlightSegment[]
     },
     reducers: {
@@ -154,14 +154,17 @@ export const flightData = createSlice({
             state.flights = [];
             flightData.caseReducers.clearProfile(state);
         },
-        setProfile: (state, action: PayloadAction<string>) => {
-            state.profileUrl = action.payload;
+        setProfileFlight: (state, action: PayloadAction<number>) => {
+            state.profileId = {type: 'flight', id: action.payload};
+        },
+        setProfileRoute: (state, action: PayloadAction<number>) => {
+            state.profileId = {type: 'route', id: action.payload};
         },
         loadProfile: (state, action: PayloadAction<FlightSegment[]>) => {
             state.profile = action.payload;
         },
         clearProfile: (state) => {
-            state.profileUrl = null;
+            state.profileId = {type: null, id: null};
             state.profile = [];
         }
     }

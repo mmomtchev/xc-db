@@ -1,7 +1,7 @@
 import React from 'react';
 
 import round from '../lib/round';
-import {flightData, useDispatch, useSelector} from './store';
+import {flightData, serverUrl, useDispatch, useSelector} from './store';
 
 import pacman from './svg/pacman.svg';
 import config from '../config.json';
@@ -59,7 +59,7 @@ function segmentTrack(
 
 export default function Profile() {
     const ref = React.useRef<HTMLCanvasElement>();
-    const url = useSelector((state) => state.flightData.profileUrl);
+    const profileId = useSelector((state) => state.flightData.profileId);
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
     const [spinner, setSpinner] = React.useState(0);
@@ -68,7 +68,11 @@ export default function Profile() {
         const ctx = ref.current.getContext('2d');
         const height = ref.current.height;
         ctx.clearRect(0, 0, ref.current.width, height);
-        if (!url) return;
+        if (!profileId.type) return;
+        const url =
+            profileId.type === 'flight'
+                ? `${serverUrl}/point/flight/${profileId.id}`
+                : `${serverUrl}/point/route/${profileId.id}`;
 
         setSpinner((val) => val + 1);
         debug('loading point', url);
@@ -130,7 +134,7 @@ export default function Profile() {
             .catch((e) => console.error(e))
             .then(() => setSpinner((val) => val - 1));
         return () => controller.abort();
-    }, [dispatch, url, settings]);
+    }, [dispatch, profileId, settings]);
 
     return (
         <React.Fragment>

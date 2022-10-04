@@ -27,7 +27,7 @@ export function FlightList() {
                 const flights = json.map(SQLFlightInfo);
                 dispatch(flightData.actions.loadFlights(flights));
                 dispatch(flightData.actions.unrollRoute());
-                dispatch(flightData.actions.setProfile(`${serverUrl}/point/route/${routeId}`));
+                dispatch(flightData.actions.setProfileRoute(routeId));
             })
             // eslint-disable-next-line no-console
             .catch((e) => console.error(e));
@@ -54,15 +54,23 @@ export function FlightList() {
 
 export function Flight(props: {flight: FlightInfo}) {
     const launch = useSelector((state) => state.flightData.launch);
+    const profileId = useSelector((state) => state.flightData.profileId);
     const dispatch = useDispatch();
+    const active = React.useMemo(
+        () =>
+            profileId.id === props.flight.id && profileId.type === 'flight'
+                ? 'border border-4 border-primary'
+                : 'border',
+        [props.flight.id, profileId]
+    );
 
     return (
         <div
-            className='infobox flight d-flex flex-column text-bg-dark border rounded-1 p-1'
+            className={`infobox flight d-flex flex-column text-bg-dark ${active} rounded-1 p-1`}
             onClick={useCallback(
                 (e) => {
                     e.stopPropagation();
-                    dispatch(flightData.actions.setProfile(`${serverUrl}/point/flight/${props.flight.id}`));
+                    dispatch(flightData.actions.setProfileFlight(props.flight.id));
                 },
                 [dispatch, props.flight.id]
             )}
@@ -110,7 +118,9 @@ export function Flight(props: {flight: FlightInfo}) {
             <div className='score d-flex flex-row justify-content-between'>
                 <span className='fw-bold'>{props.flight.score.toFixed(2)} pts</span>
                 &nbsp;
-                <span className='badge fw-bold border rounded-2'>{props.flight.type === 'FAI' ? 'FAI' : ''}</span>
+                <span className='badge fw-bold border border-1 border-secondary rounded-2'>
+                    {props.flight.type === 'FAI' ? 'FAI' : ''}
+                </span>
                 &nbsp;
                 <span className='fw-bold'>{props.flight.distance.toFixed(2)} km</span>
             </div>
