@@ -63,9 +63,13 @@ export function Route(props: {route: RouteInfo}) {
         <div
             className='infobox route d-flex flex-column justify-content-start rounded-2 m-1 p-2 border'
             onClick={React.useCallback(() => {
-                dispatch(flightData.actions.setRoute(props.route.id));
-                dispatch(flightData.actions.loadRoute(props.route));
-            }, [dispatch, props.route])}
+                if (routeId !== props.route.id) {
+                    dispatch(flightData.actions.setRoute(props.route.id));
+                    dispatch(flightData.actions.loadRoute(props.route));
+                } else {
+                    dispatch(flightData.actions.rollRoute());
+                }
+            }, [props.route, routeId, dispatch])}
         >
             <Info label='Score maximal' text={props.route.maxScore.toFixed(2)} />
             <Info label='Score moyen' text={props.route.avgScore.toFixed(2)} />

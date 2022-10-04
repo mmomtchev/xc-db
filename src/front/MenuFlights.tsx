@@ -12,8 +12,8 @@ export function FlightList() {
     const routeId = useSelector((state) => state.flightData.routeId);
     const launchId = useSelector((state) => state.flightData.launchId);
     const settings = useSelector((state) => state.settings);
+    const unrolled = useSelector((state) => state.flightData.routeUnrolled);
     const dispatch = useDispatch();
-    const [inFlights, setInFlights] = React.useState(false);
     const flightsRef = React.useRef<HTMLDivElement>();
 
     React.useEffect(() => {
@@ -26,7 +26,7 @@ export function FlightList() {
                 debug('loaded flight/route', {launchId, routeId});
                 const flights = json.map(SQLFlightInfo);
                 dispatch(flightData.actions.loadFlights(flights));
-                setInFlights(true);
+                dispatch(flightData.actions.unrollRoute());
                 dispatch(flightData.actions.setProfile(`${serverUrl}/point/route/${routeId}`));
             })
             // eslint-disable-next-line no-console
@@ -37,7 +37,7 @@ export function FlightList() {
     return (
         <CSSTransition
             nodeRef={flightsRef}
-            in={inFlights}
+            in={unrolled}
             timeout={300}
             classNames='animated-list'
             unmountOnExit

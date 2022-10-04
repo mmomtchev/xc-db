@@ -29,7 +29,7 @@ export function Launch() {
         return () => controller.abort();
     }, [dispatch, launchId, settings]);
 
-    const onClick = React.useCallback(() => dispatch(flightData.actions.clearRoute()), [dispatch]);
+    const onClick = React.useCallback(() => dispatch(flightData.actions.rollRoute()), [dispatch]);
 
     if (!launch) return <div className='infobox launch m-2'>Choissisez un décollage sur la carte</div>;
 
