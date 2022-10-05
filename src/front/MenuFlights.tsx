@@ -75,15 +75,18 @@ export function Flight(props: {flight: FlightInfo}) {
                 [props.flight.id, launchId, routeId, navigate]
             )}
         >
-            <a
-                className='pilot fw-bold mr-1 text-light'
-                href={props.flight.flightUrl}
-                target='_blank'
-                rel='noreferrer'
-                onClick={(e) => e.stopPropagation()}
-            >
-                {props.flight.pilotName}
-            </a>
+            <div className='d-flex flex-row justify-content-between pilot fw-bold'>
+                <strong>{props.flight.pilotName}</strong>
+                <a
+                    className='text-light text-decoration-none'
+                    href={props.flight.flightUrl}
+                    target='_blank'
+                    rel='noreferrer'
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    &#x2299;
+                </a>
+            </div>
             <div className='d-flex flex-row justify-content-between badge'>
                 <div className='fw-bold'>
                     {props.flight.windDirection !== null ? (
