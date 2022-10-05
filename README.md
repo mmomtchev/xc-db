@@ -20,6 +20,8 @@ In order to install and use this project, besides the source code available here
     https://data.velivole.fr/data/launch_sites.min.geojson is a good European database
     https://xcdb.velivole.fr/launch_sites.min.geojson is the French-only version used on the alpha version
 
+-   _(optionally)_ A copy of the [SRTM1](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1) data for your area
+
 Required skills to install/use/maintain a site with the project: experienced DevOps engineer
 Required skills to work on it: Working knowledge of TypeScript, React and Node.js with a little bit of MySQL, Express and Redux
 
@@ -39,6 +41,15 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
         "pass": "b045e6a8164d",
         "db": "xcdb",
         "host": "localhost"
+    }
+    ```
+
+    Also, specify the directory where the raw uncompressed [SRTM1](https://www.usgs.gov/centers/eros/science/usgs-eros-archive-digital-elevation-shuttle-radar-topography-mission-srtm-1) data can be found and eventually change the API port:
+
+    ```json
+    "dbserver": {
+        "port": 8040,
+        "srtm_dir": "/home/mmom/velivole/dev/data/SRTM1/hgt/unzipped"
     }
     ```
 
