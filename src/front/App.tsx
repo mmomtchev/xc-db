@@ -20,7 +20,12 @@ function App() {
                     </div>
                     <div></div>
                     <div>
-                        <small>un projet de velivole.fr</small>
+                        <small>
+                            un projet de&nbsp;
+                            <a className='text-light' href='https://www.velivole.fr'>
+                                velivole.fr
+                            </a>
+                        </small>
                     </div>
                 </div>
             </header>
