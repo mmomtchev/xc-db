@@ -46,7 +46,10 @@ export function query(sql, args?: unknown[]): Promise<unknown[]> {
             if (process.env.DEBUG) {
                 console.timeEnd(sql);
             }
-            if (err) reject(err);
+            if (err) {
+                db = null;
+                reject(err);
+            }
             resolve(res);
         });
         if (process.env.DEBUG) console.debug(q.sql);
