@@ -116,7 +116,7 @@ export function Map() {
             ) : null}
             <RLayerVector zIndex={50}>
                 <RStyle.RStyle>
-                    <RStyle.RStroke color='gray' width={3} />
+                    <RStyle.RStroke color='darkblue' width={3} />
                 </RStyle.RStyle>
                 {React.useMemo(() => (segments.length > 0 ? <MapTrack /> : <React.Fragment />), [segments])}
             </RLayerVector>
