@@ -46,3 +46,25 @@
     width: 100%;
     height: 25vh;
 }
+
+.ol-layers-control {
+    right: 8px;
+    top: 8px;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.ol-layers-control:hover {
+    background-color: rgba(255, 255, 255, 0.9);
+}
+
+.ol-layers-control label {
+    margin-left: 8px;
+}
+
+.ol-layers-control>div {
+    padding: 8px;
+}
+
+.ol-layers-control>span>*:first-child {
+    margin-left: auto;
+}

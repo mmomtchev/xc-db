@@ -4,13 +4,14 @@ import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
 import {boundingExtent} from 'ol/extent';
-import {RFeatureUIEvent, RLayerCluster, RLayerVector, RLayerVectorImage, RMap, ROSM, RStyle} from 'rlayers';
+import {RFeatureUIEvent, RLayerCluster, RLayerTile, RLayerVector, RLayerVectorImage, RMap, ROSM, RStyle} from 'rlayers';
+import {RLayers} from 'rlayers/control';
 
 import config from '../config.json';
 import iconLaunch from './svg/icon-paraglide.svg';
 
 import 'ol/ol.css';
-import {useDispatch, useSelector, Settings, flightData, serverUrl} from './store';
+import {useSelector, Settings, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 import {fetchFilters} from './Settings';
@@ -55,6 +56,8 @@ function cursorDefault(ev) {
     ev.map.getTarget().style.cursor = '';
 }
 
+const layersButton = <button>&#9776;</button>;
+
 export function Map() {
     const settings = useSelector((state) => state.settings);
     const routes = useSelector((state) => state.flightData.routesList);
@@ -88,7 +91,14 @@ export function Map() {
 
     return (
         <RMap className='map' initial={{center: Forclaz, zoom: 7}} extent={extent}>
-            <ROSM />
+            <RLayers element={layersButton}>
+                <ROSM properties={{label: 'OSM'}} />
+                <RLayerTile
+                    properties={{label: 'OpenTopo'}}
+                    url='https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+                    attributions='Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)'
+                />
+            </RLayers>
             <RLayerCluster
                 zIndex={20}
                 format={reader}
