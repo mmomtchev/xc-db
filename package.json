@@ -6,12 +6,13 @@
     "author": "Momtchil Momtchev <momtchil@momtchev.com>",
     "scripts": {
         "build": "npm run build:front && npm run build:back",
-        "build:front": "react-scripts build",
+        "build:front": "REACT_APP_BUILD=\"`git rev-parse --short HEAD` `date +%Y-%m-%d`\" react-scripts build",
         "build:back": "tsc && rollup -c rollup.config.js",
         "start": "react-scripts start",
         "test": "echo \"Error: no test specified\" && exit 1",
         "deploy:front": "tar -C build -zcf - `cd build; ls *.png; ls favicon* index*` manifest.json robots.txt static | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -C www -zxvf -'",
-        "deploy:back": "tar -C build -zcf - prod deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'"
+        "deploy:back": "tar -C build -zcf - prod deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'",
+        "deploy": "npm run deploy:back && npm run deploy:front && ssh xcdb@yastreb.garga.net 'systemctl --user restart dbserver.service'"
     },
     "browserslist": {
         "production": [
