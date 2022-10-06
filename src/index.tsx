@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import {IntlProvider} from 'react-intl';
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.bundle.js';
 import './index.css';
@@ -10,6 +11,12 @@ import {store, setRouter} from './front/store';
 import {Provider} from 'react-redux';
 
 import reportWebVitals from './front/reportWebVitals';
+
+import fr from './compiled-lang/fr.json';
+import en from './compiled-lang/en.json';
+
+const userLang = (navigator.language || 'en-US').split('-')[0];
+const messages = {fr, en};
 
 const router = createBrowserRouter([
     {
@@ -22,7 +29,9 @@ const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement)
 root.render(
     <React.StrictMode>
         <Provider store={store}>
-            <RouterProvider router={router} />
+            <IntlProvider locale={userLang} defaultLocale='en' messages={messages[userLang]}>
+                <RouterProvider router={router} />
+            </IntlProvider>
         </Provider>
     </React.StrictMode>
 );

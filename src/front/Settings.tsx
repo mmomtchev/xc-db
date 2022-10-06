@@ -1,6 +1,8 @@
 import React from 'react';
+import {useIntl} from 'react-intl';
 
 import {useSelector, useDispatch, Settings, settingsSlice} from './store';
+import {localizedDirections, localizedMonths} from './Intl';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
 
 import iconUncleSam from './jpg/uncle_sam.jpg';
@@ -62,6 +64,7 @@ function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
 function WindButton(props: {wind: typeof directionsWind[number]}) {
     const setting = useSelector((state) => state.settings.wind[props.wind]);
     const dispatch = useDispatch();
+    const intl = useIntl();
 
     return (
         <button
@@ -69,12 +72,13 @@ function WindButton(props: {wind: typeof directionsWind[number]}) {
             className={`badge btn btn-primary ${setting ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setWind({wind: props.wind, val: !setting}))}
         >
-            {props.wind}
+            {localizedDirections(intl)[props.wind]}
         </button>
     );
 }
 
 function MonthButton(props: {month: typeof namesMonth[number]}) {
+    const intl = useIntl();
     const setting = useSelector((state) => state.settings.month[props.month]);
     const dispatch = useDispatch();
 
@@ -84,7 +88,7 @@ function MonthButton(props: {month: typeof namesMonth[number]}) {
             className={`badge btn btn-primary ${setting ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setMonth({month: props.month, val: !setting}))}
         >
-            {props.month}
+            {localizedMonths(intl)[props.month]}
         </button>
     );
 }
@@ -108,6 +112,7 @@ function ScoreButton(props: {scoreGroup: number}) {
 }
 
 export default function SettingsGroup() {
+    const intl = useIntl();
     return (
         <React.Fragment>
             <div className='btn-group m-1 p-1' role='group'>
@@ -121,7 +126,7 @@ export default function SettingsGroup() {
                         <tbody>
                             <tr>
                                 <td align='left'>
-                                    <WindButton wind='NO' />
+                                    <WindButton wind='NW' />
                                 </td>
                                 <td>
                                     <WindButton wind='N' />
@@ -132,7 +137,7 @@ export default function SettingsGroup() {
                             </tr>
                             <tr>
                                 <td align='left'>
-                                    <WindButton wind='O' />
+                                    <WindButton wind='W' />
                                 </td>
                                 <td>&#129517;</td>
                                 <td align='right'>
@@ -141,7 +146,7 @@ export default function SettingsGroup() {
                             </tr>
                             <tr>
                                 <td align='left'>
-                                    <WindButton wind='SO' />
+                                    <WindButton wind='SW' />
                                 </td>
                                 <td>
                                     <WindButton wind='S' />
@@ -156,7 +161,8 @@ export default function SettingsGroup() {
                 <div className='d-flex flex-column align-items-center'>
                     <img height='80px' width='60px' src={iconUncleSam} />
                     <small>
-                        <strong>TOI?</strong> T&apos;es un sponsor?
+                        <strong>{intl.formatMessage({defaultMessage: 'YOU?', id: 'bVgjEz'})}</strong>&nbsp;
+                        {intl.formatMessage({defaultMessage: 'Are you a sponsor?', id: 'A8mNJ7'})}
                     </small>
                 </div>
             </div>

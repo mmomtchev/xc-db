@@ -6,13 +6,15 @@
     "author": "Momtchil Momtchev <momtchil@momtchev.com>",
     "scripts": {
         "build": "npm run build:front && npm run build:back",
-        "build:front": "REACT_APP_BUILD=\"`git rev-parse --short HEAD` `date +%Y-%m-%d`\" react-scripts build",
+        "build:front": "npm run lang:compile && REACT_APP_BUILD=\"`git rev-parse --short HEAD` `date +%Y-%m-%d`\" react-scripts build",
         "build:back": "tsc && rollup -c rollup.config.js",
         "start": "react-scripts start",
         "test": "echo \"Error: no test specified\" && exit 1",
         "deploy:front": "tar -C build -zcf - `cd build; ls *.png; ls favicon* index*` manifest.json robots.txt static | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -C www -zxvf -'",
         "deploy:back": "tar -C build -zcf - prod deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'",
-        "deploy": "npm run deploy:back && npm run deploy:front && ssh xcdb@yastreb.garga.net 'systemctl --user restart dbserver.service'"
+        "deploy": "npm run deploy:back && npm run deploy:front && ssh xcdb@yastreb.garga.net 'systemctl --user restart dbserver.service'",
+        "lang:extract": "formatjs extract src/front/*.tsx --out-file lang/en.json --format simple",
+        "lang:compile": "formatjs compile --format simple lang/fr.json --ast --out-file src/compiled-lang/fr.json && formatjs compile --format simple lang/en.json --ast --out-file src/compiled-lang/en.json"
     },
     "browserslist": {
         "production": [
@@ -48,6 +50,7 @@
         "ol": "^7.1.0",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-intl": "^6.1.2",
         "react-redux": "^8.0.4",
         "react-router-dom": "^6.4.1",
         "react-scripts": "5.0.1",
@@ -59,6 +62,7 @@
         "web-vitals": "^2.1.4"
     },
     "devDependencies": {
+        "@formatjs/cli": "^5.1.1",
         "@rollup/plugin-commonjs": "^22.0.2",
         "@rollup/plugin-json": "^4.1.0",
         "@rollup/plugin-node-resolve": "^14.1.0",
@@ -79,6 +83,7 @@
         "builtin-modules": "^3.3.0",
         "eslint": "^8.24.0",
         "eslint-config-prettier": "^8.5.0",
+        "eslint-plugin-formatjs": "^4.3.2",
         "eslint-plugin-import": "^2.26.0",
         "eslint-plugin-prettier": "^4.2.1",
         "eslint-plugin-react": "^7.31.8",

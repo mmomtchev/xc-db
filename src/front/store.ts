@@ -1,6 +1,7 @@
 import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
 import {Router} from '@remix-run/router';
+
 import {FlightSegment} from '../lib/flight';
 import {
     categoriesGlider,

@@ -1,5 +1,6 @@
 import React from 'react';
 import {useMatch, useNavigate} from 'react-router-dom';
+import {useIntl} from 'react-intl';
 import {CSSTransition} from 'react-transition-group';
 
 import Info from './Info';
@@ -15,7 +16,7 @@ export function RouteList() {
     const routesRef = React.useRef(null);
     const [loading, setLoading] = React.useState(false);
 
-    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
     const routes = useSelector((state) => state.flightData.routesList);
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
@@ -57,14 +58,15 @@ export function RouteList() {
 }
 
 export function Route(props: {route: RouteInfo}) {
-    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
-    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
-    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight || '') || null;
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
     const route = useSelector((state) => state.flightData.route);
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const intl = useIntl();
 
-    const ref = React.useRef<HTMLDivElement>();
+    const ref = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (routeId !== null && routeId === props.route.id && routeId !== route?.id)
@@ -88,10 +90,22 @@ export function Route(props: {route: RouteInfo}) {
                 }
             }, [props.route, routeId, launchId, navigate, dispatch])}
         >
-            <Info label='Score maximal' text={props.route.maxScore.toFixed(2)} />
-            <Info label='Score moyen' text={props.route.avgScore.toFixed(2)} />
-            <Info label='Vols' text={props.route.flights.toFixed(0)} />
-            <Info label='Dont du déco/critères' text={props.route.flightsSelected.toFixed(0)} />
+            <Info
+                label={intl.formatMessage({defaultMessage: 'Max score', id: 'ojsSBF'})}
+                text={props.route.maxScore.toFixed(2)}
+            />
+            <Info
+                label={intl.formatMessage({defaultMessage: 'Average score', id: '/0WDGe'})}
+                text={props.route.avgScore.toFixed(2)}
+            />
+            <Info
+                label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})}
+                text={props.route.flights.toFixed(0)}
+            />
+            <Info
+                label={intl.formatMessage({defaultMessage: 'Matching launch/selection', id: 'Iwz+XF'})}
+                text={props.route.flightsSelected.toFixed(0)}
+            />
             {routeId !== null && routeId === props.route.id && <FlightList />}
         </div>
     );

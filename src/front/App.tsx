@@ -1,4 +1,6 @@
 import React from 'react';
+import {useIntl} from 'react-intl';
+
 import './css/App.css';
 import './css/animated-list.css';
 
@@ -19,6 +21,7 @@ function App() {
             .then((json) => setBackVersion(json.version));
         return () => controller.abort();
     }, []);
+    const intl = useIntl();
 
     return (
         <div className='main'>
@@ -35,7 +38,7 @@ function App() {
                     </div>
                     <div>
                         <small>
-                            un projet de&nbsp;
+                            {intl.formatMessage({defaultMessage: 'a project by', id: 'RXBcq1'})}&nbsp;
                             <a className='text-light' href='https://www.velivole.fr'>
                                 velivole.fr
                             </a>

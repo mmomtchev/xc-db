@@ -59,15 +59,17 @@ function segmentTrack(
 }
 
 export default function Profile() {
-    const ref = React.useRef<HTMLCanvasElement>();
-    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
-    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
+    const ref = React.useRef<HTMLCanvasElement>(null);
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight || '') || null;
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
     const [spinner, setSpinner] = React.useState(0);
 
     React.useEffect(() => {
+        if (!ref.current) return;
         const ctx = ref.current.getContext('2d');
+        if (!ctx) return;
         const height = ref.current.height;
         ctx.clearRect(0, 0, ref.current.width, height);
         if (!routeId) return;
@@ -133,7 +135,7 @@ export default function Profile() {
             .catch((e) => console.error(e))
             .then(() => setSpinner((val) => val - 1));
         return () => controller.abort();
-    }, [dispatch, routeId, flightId, settings]);
+    }, [dispatch, routeId, flightId, settings, ref]);
 
     return (
         <React.Fragment>

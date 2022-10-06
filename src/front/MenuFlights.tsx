@@ -1,5 +1,6 @@
-import React, {useCallback} from 'react';
+import React, {LegacyRef, useCallback} from 'react';
 import {useMatch, useNavigate} from 'react-router-dom';
+import {useIntl} from 'react-intl';
 import {windSVG} from '../lib/wind-svg';
 import {CSSTransition} from 'react-transition-group';
 
@@ -11,13 +12,13 @@ import {debug} from '../lib/debug';
 
 export function FlightList() {
     const flights = useSelector((state) => state.flightData.flights);
-    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
-    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
 
     const settings = useSelector((state) => state.settings);
     const unrolled = useSelector((state) => state.flightData.routeUnrolled);
     const dispatch = useDispatch();
-    const flightsRef = React.useRef<HTMLDivElement>();
+    const flightsRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
         if (!routeId) return;
@@ -56,16 +57,17 @@ export function FlightList() {
 
 export function Flight(props: {flight: FlightInfo}) {
     const launch = useSelector((state) => state.flightData.launch);
-    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
-    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
-    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
+    const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight || '') || null;
     const navigate = useNavigate();
+    const intl = useIntl();
     const active = React.useMemo(
         () => (props.flight.id === flightId ? 'border border-4 border-primary' : 'border'),
         [props.flight.id, flightId]
     );
 
-    const ref = React.useRef<HTMLDivElement>();
+    const ref = React.useRef<HTMLDivElement>(null);
     React.useLayoutEffect(() => {
         if (flightId !== null && flightId === props.flight.id && ref.current) scrollIntoViewIfNeeded(ref.current);
     });
@@ -116,12 +118,18 @@ export function Flight(props: {flight: FlightInfo}) {
                         <span></span>
                     )}
                 </div>
-                <div className='fw-bold'>{new Date(props.flight.date).toDateString()}</div>
+                <div className='fw-bold'>{intl.formatDate(new Date(props.flight.date))}</div>
             </div>
             <div className='score d-flex flex-row justify-content-between'>
                 <span className='fw-bold'>{props.flight.category}</span>
                 &nbsp;
-                {props.flight.launch_id !== launch.id ? <del className='border rounded-2'>déco</del> : <div></div>}
+                {props.flight.launch_id !== launch.id ? (
+                    <del className='border rounded-2'>
+                        {intl.formatMessage({defaultMessage: 'launch', id: 'TS8xq9'})}
+                    </del>
+                ) : (
+                    <div></div>
+                )}
                 &nbsp;
                 <span>{props.flight.glider}</span>
             </div>
