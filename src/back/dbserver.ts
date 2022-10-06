@@ -7,7 +7,7 @@ import gdal from 'gdal-async';
 import * as db from './db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
 import {terrainUnderPath} from '../lib/dem';
-import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
+import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
 
 const version = global.__BUILD__ === undefined ? 'development' : global.__BUILD__;
 const app = express();
@@ -59,6 +59,15 @@ function filters(req: Request, table?: string): string {
                             categoryClauses.push(`${selector}category = '${categoriesGlider[cat]}'`);
                     }
                     clauses.push(`( ${categoryClauses.join(' OR ')} )`);
+                }
+                break;
+            case 'month':
+                {
+                    const monthClauses = [];
+                    for (const month in namesMonth) {
+                        if (+req.query['month'][month] === 1) monthClauses.push(`(${selector}month = ${+month + 1})`);
+                    }
+                    clauses.push(`( ${monthClauses.join(' OR ')} )`);
                 }
                 break;
         }

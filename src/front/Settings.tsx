@@ -1,7 +1,7 @@
 import React from 'react';
 
 import {useSelector, useDispatch, Settings, settingsSlice} from './store';
-import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
+import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
 
 import iconUncleSam from './jpg/uncle_sam.jpg';
 
@@ -21,7 +21,12 @@ export function fetchFilters(settings: Settings): string {
         if (settings.score[s]) score += '1';
         else score += '0';
 
-    return `&wind=${wind}&cat=${cat}&score=${score}&order=${settings.mode}`;
+    let month = '';
+    for (const m in namesMonth)
+        if (settings.month[namesMonth[m]]) month += '1';
+        else month += '0';
+
+    return `&wind=${wind}&cat=${cat}&score=${score}&month=${month}&order=${settings.mode}`;
 }
 
 function ModeButton(props: {label: string; mode: Settings['mode']}) {
@@ -65,6 +70,21 @@ function WindButton(props: {wind: typeof directionsWind[number]}) {
             onClick={() => dispatch(settingsSlice.actions.setWind({wind: props.wind, val: !setting}))}
         >
             {props.wind}
+        </button>
+    );
+}
+
+function MonthButton(props: {month: typeof namesMonth[number]}) {
+    const setting = useSelector((state) => state.settings.month[props.month]);
+    const dispatch = useDispatch();
+
+    return (
+        <button
+            type='button'
+            className={`badge btn btn-primary ${setting ? 'active' : ''}`}
+            onClick={() => dispatch(settingsSlice.actions.setMonth({month: props.month, val: !setting}))}
+        >
+            {props.month}
         </button>
     );
 }
@@ -143,6 +163,16 @@ export default function SettingsGroup() {
             <div className='btn-group m-1 p-1' role='group'>
                 {categoriesGlider.map((c, i) => (
                     <CategoryButton key={i} cat={c} />
+                ))}
+            </div>
+            <div className='btn-group mt-1 mb-0 px-1 pt-1 pb-0 flex-wrap' role='group'>
+                {namesMonth.slice(0, 6).map((m, i) => (
+                    <MonthButton key={i} month={m} />
+                ))}
+            </div>
+            <div className='btn-group mt-0 mb-1 px-1 pt-0 pb-1 flex-wrap' role='group'>
+                {namesMonth.slice(6, 12).map((m, i) => (
+                    <MonthButton key={i} month={m} />
                 ))}
             </div>
             <div className='btn-group m-1 p-1' role='group'>

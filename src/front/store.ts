@@ -2,7 +2,14 @@ import {configureStore, createSlice, PayloadAction} from '@reduxjs/toolkit';
 import {TypedUseSelectorHook, useSelector as _useSelector, useDispatch as _useDispatch} from 'react-redux';
 import {Router} from '@remix-run/router';
 import {FlightSegment} from '../lib/flight';
-import {categoriesGlider, categoryGlider, directionsWind, directionWind} from '../lib/types';
+import {
+    categoriesGlider,
+    categoryGlider,
+    directionsWind,
+    directionWind,
+    namesMonth,
+    selectionMonth
+} from '../lib/types';
 
 export const serverUrl = `${
     process.env.REACT_APP_XCDB_SERVER || (process.env.NODE_ENV === 'development' ? 'http://localhost:8040' : '/api')
@@ -96,6 +103,7 @@ export type Settings = {
     category: categoryGlider;
     wind: directionWind;
     score: boolean[];
+    month: selectionMonth;
 };
 
 let router: Router;
@@ -180,7 +188,21 @@ function initialSettings() {
             O: true,
             NO: true
         },
-        score: [true, true, true, true, true]
+        score: [true, true, true, true, true],
+        month: {
+            Jan: true,
+            Fev: true,
+            Mar: true,
+            Avr: true,
+            Mai: true,
+            Jun: true,
+            Jul: true,
+            Aoû: true,
+            Sep: true,
+            Oct: true,
+            Nov: true,
+            Dec: true
+        }
     } as Settings;
 
     if (window.localStorage)
@@ -216,6 +238,10 @@ export const settingsSlice = createSlice({
         setScoreGroup: (state, action: PayloadAction<{group: number; val: boolean}>) => {
             state.score[action.payload.group] = action.payload.val;
             if (window.localStorage) localStorage.setItem('score', JSON.stringify(state.score));
+        },
+        setMonth: (state, action: PayloadAction<{month: typeof namesMonth[number]; val: boolean}>) => {
+            state.month[action.payload.month] = action.payload.val;
+            if (window.localStorage) localStorage.setItem('month', JSON.stringify(state.month));
         }
     }
 });
