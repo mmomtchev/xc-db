@@ -1,11 +1,9 @@
 {
     "name": "xc-db",
     "version": "1.0.0",
-    "private": "true",
     "description": "Paragliding XC DB",
     "license": "GPL-3.0",
     "author": "Momtchil Momtchev <momtchil@momtchev.com>",
-    "main": "index.js",
     "scripts": {
         "build": "npm run build:front && npm run build:back",
         "build:front": "react-scripts build",
