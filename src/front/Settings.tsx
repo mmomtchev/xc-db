@@ -116,9 +116,9 @@ export default function SettingsGroup() {
     return (
         <React.Fragment>
             <div className='btn-group m-1 p-1' role='group'>
-                <ModeButton label='Score' mode='score' />
-                <ModeButton label='Vols' mode='flights' />
-                <ModeButton label='Moyenne' mode='avg' />
+                <ModeButton label={intl.formatMessage({defaultMessage: 'Score', id: 'oLkLww'})} mode='score' />
+                <ModeButton label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})} mode='flights' />
+                <ModeButton label={intl.formatMessage({defaultMessage: 'Average', id: 'FnRTEV'})} mode='avg' />
             </div>
             <div className='d-flex flex-row justify-content-around'>
                 <div className='btn-group m-1 p-1' role='group'>
