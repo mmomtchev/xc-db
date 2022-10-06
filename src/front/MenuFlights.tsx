@@ -5,8 +5,9 @@ import {CSSTransition} from 'react-transition-group';
 
 import {useSelector, FlightInfo, useDispatch, flightData, SQLFlightInfo, serverUrl} from './store';
 import {directionsWind} from '../lib/types';
-import {debug} from '../lib/debug';
+import {scrollIntoViewIfNeeded} from './lib';
 import {fetchFilters} from './Settings';
+import {debug} from '../lib/debug';
 
 export function FlightList() {
     const flights = useSelector((state) => state.flightData.flights);
@@ -64,8 +65,14 @@ export function Flight(props: {flight: FlightInfo}) {
         [props.flight.id, flightId]
     );
 
+    const ref = React.useRef<HTMLDivElement>();
+    React.useLayoutEffect(() => {
+        if (flightId !== null && flightId === props.flight.id && ref.current) scrollIntoViewIfNeeded(ref.current);
+    });
+
     return (
         <div
+            ref={ref}
             className={`infobox flight d-flex flex-column text-bg-dark ${active} rounded-1 p-1`}
             onClick={useCallback(
                 (e) => {

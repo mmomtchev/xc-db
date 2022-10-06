@@ -119,8 +119,6 @@ export const flightData = createSlice({
         },
         loadRouteList: (state, action: PayloadAction<RouteInfo[]>) => {
             state.routesList = action.payload;
-            if (state.route?.id && !state.routesList.find((r) => r.id === state.route.id))
-                flightData.caseReducers.clearRoute(state);
         },
         clearRouteList: (state) => {
             state.routesList = [];
@@ -128,7 +126,6 @@ export const flightData = createSlice({
         },
         loadRoute: (state, action: PayloadAction<RouteInfo>) => {
             state.route = action.payload;
-            flightData.caseReducers.clearFlights(state);
         },
         clearRoute: (state) => {
             state.route = null;
@@ -144,7 +141,6 @@ export const flightData = createSlice({
         },
         loadFlights: (state, action: PayloadAction<FlightInfo[]>) => {
             state.flights = action.payload;
-            flightData.caseReducers.clearProfile(state);
         },
         clearFlights: (state) => {
             state.flights = [];

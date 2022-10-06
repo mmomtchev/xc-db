@@ -23,7 +23,6 @@ export function Launch() {
                 dispatch(flightData.actions.loadLaunch(json));
             })
             .catch((e) => {
-                dispatch(flightData.actions.clearRouteList());
                 // eslint-disable-next-line no-console
                 console.error(e);
             });

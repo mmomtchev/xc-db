@@ -20,6 +20,13 @@
             "name": "front in Chrome",
             "url": "http://localhost:3000",
             "webRoot": "${workspaceFolder}"
+        },
+        {
+            "type": "chrome",
+            "request": "launch",
+            "name": "front in Chrome (with URL)",
+            "url": "http://localhost:3000/launch/54/route/339/flight/53358",
+            "webRoot": "${workspaceFolder}"
         }
     ]
 }

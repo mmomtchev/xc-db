@@ -6,6 +6,7 @@ import Info from './Info';
 import {FlightList} from './MenuFlights';
 import {fetchFilters} from './Settings';
 import {RouteInfo, useDispatch, useSelector, SQLRouteInfo, flightData, serverUrl} from './store';
+import {scrollIntoViewIfNeeded} from './lib';
 import {debug} from '../lib/debug';
 
 import pacman from './svg/pacman.svg';
@@ -35,7 +36,6 @@ export function RouteList() {
             return () => controller.abort();
         } else {
             setLoading(false);
-            dispatch(flightData.actions.clearRouteList());
         }
     }, [dispatch, launchId, settings]);
 
@@ -57,18 +57,32 @@ export function RouteList() {
 }
 
 export function Route(props: {route: RouteInfo}) {
+    const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight) || null;
     const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route) || null;
     const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch) || null;
+    const route = useSelector((state) => state.flightData.route);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
+    const ref = React.useRef<HTMLDivElement>();
+
+    React.useEffect(() => {
+        if (routeId !== null && routeId === props.route.id && routeId !== route?.id)
+            dispatch(flightData.actions.loadRoute(props.route));
+    }, [routeId, props.route, route, dispatch]);
+
+    React.useLayoutEffect(() => {
+        if (routeId !== null && routeId === props.route.id && ref.current && !flightId)
+            scrollIntoViewIfNeeded(ref.current);
+    });
+
     return (
         <div
+            ref={ref}
             className='infobox route d-flex flex-column justify-content-start rounded-2 m-1 p-2 border'
             onClick={React.useCallback(() => {
                 if (routeId !== props.route.id) {
                     navigate(`/launch/${launchId}/route/${props.route.id}`);
-                    dispatch(flightData.actions.loadRoute(props.route));
                 } else {
                     dispatch(flightData.actions.rollRoute());
                 }
@@ -78,7 +92,7 @@ export function Route(props: {route: RouteInfo}) {
             <Info label='Score moyen' text={props.route.avgScore.toFixed(2)} />
             <Info label='Vols' text={props.route.flights.toFixed(0)} />
             <Info label='Dont du déco/critères' text={props.route.flightsSelected.toFixed(0)} />
-            {routeId === props.route.id && <FlightList />}
+            {routeId !== null && routeId === props.route.id && <FlightList />}
         </div>
     );
 }
