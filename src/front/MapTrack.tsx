@@ -1,5 +1,5 @@
 import {fromLonLat} from 'ol/proj';
-import {Circle, LineString} from 'ol/geom';
+import {Circle, Point, LineString} from 'ol/geom';
 import {RFeature, RStyle} from 'rlayers';
 
 import {useSelector} from './store';
@@ -38,6 +38,31 @@ export default function MapTrack() {
                     </RStyle.RStyle>
                 </RFeature>
             ))}
+            <RFeature geometry={new Point(fromLonLat([segments[0].lng[0], segments[0].lat[0]]))}>
+                <RStyle.RStyle>
+                    <RStyle.RText text='&#10148;' font='bold 25px sans-serif'>
+                        <RStyle.RStroke color='black' width={3} />
+                        <RStyle.RFill color='#333333' />
+                    </RStyle.RText>
+                </RStyle.RStyle>
+            </RFeature>
+            <RFeature
+                geometry={
+                    new Point(
+                        fromLonLat([
+                            segments[3].lng[segments[3].lng.length - 1],
+                            segments[3].lat[segments[3].lat.length - 1]
+                        ])
+                    )
+                }
+            >
+                <RStyle.RStyle>
+                    <RStyle.RText text='&#9633;' font='bold 25px sans-serif'>
+                        <RStyle.RStroke color='black' width={3} />
+                        <RStyle.RFill color='#333333' />
+                    </RStyle.RText>
+                </RStyle.RStyle>
+            </RFeature>
         </React.Fragment>
     );
 }
