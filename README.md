@@ -136,4 +136,14 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
 13. Deployment on a production webserver
 
-    Examine the `npm run deploy` scripts to see which files should be copied. A `dbserver.service` sample file is provided for integration with `systemd`. It is recommended that the Express back-end is to be placed behind a reverse proxy such as `nginx` or `Apache` that will take care of the SSL encryption. The front-end expects to find its back-end accessible at its own URL with an `api` suffix: `https://yourdomain.dom/api/` - this should lead back to the port configured in `config.json`. Also, when using a reverse proxy, it should take care of rewriting all URLs starting with `/launch/*` to `/`.
+    Examine the `npm run deploy` scripts to see which files should be copied. A `dbserver.service` sample file is provided for integration with `systemd`.
+
+    It is recommended that the Express back-end is to be placed behind a reverse proxy such as _nginx_ or _Apache_ that will take care of the SSL encryption. By default, the front-end expects to find its back-end accessible at its own URL with an `api` suffix: `https://yourdomain.dom/api/` - this should lead back to the port configured in `config.json`. This can be modified by defining the `REACT_APP_XCDB_SERVER` variable before building.
+
+    Also, when using a reverse proxy, it should take care of rewriting all URLs starting with `/launch/*` to `/` so that _Apache_/_nginx_ will load `/index.html` when the user requests `/launch/54/route/339/flight/53358`. With _Apache_ this can be achieved with `mod_rewrite`:
+
+    ```
+    RewriteEngine On
+    RewriteCond %{REQUEST_URI} ^/launch/.*$
+    RewriteRule ^ /index.html [L]
+    ```
