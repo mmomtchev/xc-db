@@ -122,7 +122,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
 11. Start the frontend in development mode
 
-    `REACT_APP_XCDB_SERVER=http://mmom-workstation.garga:8040 npm start`
+    `REACT_APP_XCDB_SERVER=http://localhost:8040 npm start`
 
     This last step should open a browser on your local machine with the project.
 
