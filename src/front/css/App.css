@@ -1,7 +1,17 @@
+body,
+.main {
+    overflow-y: hidden;
+}
+
 .header {
-    height: 4.9vh;
+    height: 5vh;
     font-size: calc(10px + 2vmin);
     color: white;
+}
+
+.footer,
+.footer img {
+    height: 10px
 }
 
 .tiny {
@@ -10,7 +20,7 @@
 }
 
 .map {
-    height: 70vh;
+    height: calc(99vh - 5vh - 25vh - 10px);
     width: 100%;
 }
 
@@ -20,7 +30,7 @@
 }
 
 .left-menu {
-    height: 95vh;
+    height: calc(99vh - 5vh - 10px);
     width: 400px;
 }
 

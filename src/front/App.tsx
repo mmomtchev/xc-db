@@ -54,6 +54,27 @@ function App() {
                     <Profile />
                 </div>
             </div>
+            <footer className='m-0 p-0 px-2 footer tiny'>
+                <small className='d-flex flex-row justify-content-between align-items-center'>
+                    <p className='m-0 p-0'>
+                        Copyleft Momtchil Momtchev 2022, <a href='https://github.com/mmomtchev/xc-db'>Source code</a>
+                        &nbsp;under&nbsp;
+                        <a href='https://www.gnu.org/licenses/gpl-3.0.en.html'>GPL license</a>
+                    </p>
+                    <p className='m-0 p-0'>
+                        Copyleft Momtchil Momtchev 2022, API content is licensed under&nbsp;
+                        <a href='https://creativecommons.org/licenses/by/4.0/'>
+                            CC license&nbsp;
+                            <img src='https://mirrors.creativecommons.org/presskit/buttons/88x31/svg/by.svg' />
+                        </a>
+                    </p>
+                    <p className='m-0 p-0'>
+                        <a href='https://thenounproject.com/icon/paragliding-1282369/'>icon</a> by&nbsp;
+                        <a href='https://thenounproject.com/Luis/'>Luis Prado</a> from the&nbsp;
+                        <a href='https://thenounproject.com'>NounProject.com</a>
+                    </p>
+                </small>
+            </footer>
         </div>
     );
 }
