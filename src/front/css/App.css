@@ -4,8 +4,9 @@
     color: white;
 }
 
-.App-link {
-    color: #61dafb;
+.tiny {
+    font-size: 0.75rem;
+    height: fit-content;
 }
 
 .map {

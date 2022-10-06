@@ -1,3 +1,4 @@
+import {execSync} from 'child_process';
 import resolve from '@rollup/plugin-node-resolve';
 import native from 'rollup-plugin-natives';
 import copy from 'rollup-plugin-copy';
@@ -13,7 +14,8 @@ const shared = [
     replace({
         "require('readable-stream/transform')": "require('stream').Transform",
         'require("readable-stream/transform")': 'require("stream").Transform',
-        'readable-stream': 'stream'
+        'readable-stream': 'stream',
+        'global.__BUILD__': JSON.stringify(execSync('echo -n `git rev-parse --short HEAD` `date +%Y-%m-%d`').toString())
     }),
     commonjs({
         include: ['node_modules/**', 'build/**']

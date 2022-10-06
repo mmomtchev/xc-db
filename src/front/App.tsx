@@ -7,18 +7,32 @@ import {RouteList} from './MenuRoutes';
 import Map from './Map';
 import Profile from './Profile';
 import Settings from './Settings';
+import {serverUrl} from './store';
 
 function App() {
+    const [backVersion, setBackVersion] = React.useState('connecting...');
+
+    React.useEffect(() => {
+        const controller = new AbortController();
+        fetch(`${serverUrl}/version`, {signal: controller.signal})
+            .then((res) => res.json())
+            .then((json) => setBackVersion(json.version));
+        return () => controller.abort();
+    }, []);
+
     return (
         <div className='main'>
             <header className='header bg-dark'>
                 <div className='d-flex flex-row justify-content-around'>
-                    <div>
+                    <div className='d-flex flex-row'>
                         <h1>
                             XC-DB <sup>alpha</sup>
                         </h1>
+                        <div className='m-0 p-0 ms-1 tiny align-self-center'>
+                            <p className='m-0'>front: {process.env.REACT_APP_BUILD || 'development'}</p>
+                            <p className='m-0'>back: {backVersion}</p>
+                        </div>
                     </div>
-                    <div></div>
                     <div>
                         <small>
                             un projet de&nbsp;

@@ -9,6 +9,7 @@ import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from 
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind} from '../lib/types';
 
+const version = global.__BUILD__ === undefined ? 'development' : global.__BUILD__;
 const app = express();
 app.use(cors());
 if (process.env.DEBUG) {
@@ -77,6 +78,10 @@ function ordering(req: Request): string {
             return ' ORDER BY score * flights DESC';
     }
 }
+
+app.get('/version', (req, res) => {
+    res.json({version});
+});
 
 app.get('/geojson/launch/list', async (req, res) => {
     const r = await db.poolQuery(
@@ -286,5 +291,5 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(db.config.dbserver.port, () => {
-    console.log(`xcdb dbserver listening on port ${db.config.dbserver.port}`);
+    console.log(`xcdb dbserver ${version} listening on port ${db.config.dbserver.port}`);
 });
