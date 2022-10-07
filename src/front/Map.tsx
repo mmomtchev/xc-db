@@ -4,7 +4,17 @@ import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
 import {boundingExtent} from 'ol/extent';
-import {RFeatureUIEvent, RLayerCluster, RLayerTile, RLayerVector, RLayerVectorImage, RMap, ROSM, RStyle} from 'rlayers';
+import {
+    RFeatureUIEvent,
+    RLayerCluster,
+    RLayerTile,
+    RLayerVector,
+    RLayerVectorImage,
+    RLayerVectorTile,
+    RMap,
+    ROSM,
+    RStyle
+} from 'rlayers';
 import {RLayers} from 'rlayers/control';
 
 import config from '../config.json';
@@ -15,6 +25,7 @@ import {useSelector, Settings, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 import {fetchFilters} from './Settings';
+import {Circle, Fill, Stroke, Style} from 'ol/style';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const reader = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -57,6 +68,8 @@ function cursorDefault(ev) {
 }
 
 const layersButton = <button>&#9776;</button>;
+
+const skyLinesStyles: Style[] = Array(256);
 
 export function Map() {
     const settings = useSelector((state) => state.settings);
@@ -114,7 +127,10 @@ export function Map() {
                 <RStyle.RStyle>
                     <RStyle.RStroke color='#0000FF40' width={1} />
                 </RStyle.RStyle>
-                {React.useMemo(() => routes.map((r, i) => <MapRoute key={i} route={r} />), [routes])}
+                {React.useMemo(
+                    () => (route && route.id ? null : routes.map((r, i) => <MapRoute key={i} route={r} />)),
+                    [routes, route]
+                )}
             </RLayerVectorImage>
             {route ? (
                 <RLayerVector zIndex={30}>
@@ -126,10 +142,31 @@ export function Map() {
             ) : null}
             <RLayerVector zIndex={50}>
                 <RStyle.RStyle>
-                    <RStyle.RStroke color='darkblue' width={3} />
+                    <RStyle.RStroke color='cornflowerblue' width={3} />
                 </RStyle.RStyle>
                 {React.useMemo(() => (segments.length > 0 ? <MapTrack /> : <React.Fragment />), [segments])}
             </RLayerVector>
+            {route && route.id ? (
+                <RLayerVectorTile
+                    format={reader}
+                    url={`${serverUrl}/geojson/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
+                    style={(feature) => {
+                        const density = Math.round(+feature.getProperties().d / 1.5 + 63);
+                        if (!density) return skyLinesStyles[0];
+                        if (!skyLinesStyles[density]) {
+                            const color = `${density.toString(16).padStart(2, '0')}`;
+                            skyLinesStyles[density] = new Style({
+                                image: new Circle({
+                                    radius: 5,
+                                    fill: new Fill({color: `#0000${color}${color}`})
+                                }),
+                                zIndex: 10
+                            });
+                        }
+                        return skyLinesStyles[density];
+                    }}
+                />
+            ) : null}
         </RMap>
     );
 }

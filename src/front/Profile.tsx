@@ -143,7 +143,7 @@ export default function Profile() {
             .catch((e) => console.error(e))
             .then(() => setSpinner((val) => val - 1));
         return () => controller.abort();
-    }, [dispatch, routeId, flightId, settings, ref]);
+    }, [routeId, flightId, settings, ref, intl, dispatch]);
 
     return (
         <React.Fragment>

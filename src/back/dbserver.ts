@@ -8,6 +8,7 @@ import * as db from './db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
+import {tileToLongitude, tileToLatitude, pointDecimation} from '../lib/geo';
 
 const version = global.__BUILD__ === undefined ? 'development' : global.__BUILD__;
 const app = express();
@@ -278,6 +279,41 @@ app.get('/point/flight/:flight', async (req, res) => {
     }
 
     res.json(segments);
+});
+
+app.get('/geojson/point/route/:route/:z/:y/:x', async (req, res) => {
+    const x = +req.params.x;
+    const y = +req.params.y;
+    const z = +req.params.z;
+
+    const left = tileToLongitude(z, x);
+    const right = tileToLongitude(z, x + 1);
+    const top = tileToLatitude(z, y);
+    const bottom = tileToLatitude(z, y + 1);
+
+    const r = await db.poolQuery(
+        'SELECT flight_id,lat,lng from point JOIN flight_info ON (point.flight_id = flight_info.id)' +
+            ` WHERE route_id = ? AND ${filters(req)}` +
+            ' AND (lat BETWEEN ? AND ?) AND (lng BETWEEN ? AND ?) LIMIT 1000000',
+        [req.params.route, bottom, top, left, right]
+    );
+
+    const simplified = pointDecimation(z, left, top, r as Point[]);
+
+    const geojson = {
+        type: 'FeatureCollection',
+        features: simplified.map((row) => ({
+            type: 'Feature',
+            geometry: {
+                type: 'Point',
+                coordinates: [row['lng'], row['lat']]
+            },
+            properties: {
+                d: row['alt']
+            }
+        }))
+    };
+    res.json(geojson);
 });
 
 app.get('/height', async (req, res) => {

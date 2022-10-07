@@ -37,14 +37,16 @@ function createPool() {
 
 export function query(sql, args?: unknown[]): Promise<unknown[]> {
     if (!db) connect();
+    let hash;
 
     return new Promise((resolve, reject) => {
         if (process.env.DEBUG) {
-            console.time(sql);
+            hash = (Math.random() + 1).toString(36).substring(7);
+            console.time(hash + ':' + sql);
         }
         const q = db.query(sql, args, (err, res) => {
             if (process.env.DEBUG) {
-                console.timeEnd(sql);
+                console.timeEnd(hash + ':' + sql);
             }
             if (err) {
                 db = null;
@@ -58,14 +60,16 @@ export function query(sql, args?: unknown[]): Promise<unknown[]> {
 
 export function poolQuery(sql, args?: unknown[]): Promise<unknown[]> {
     if (!pool) createPool();
+    let hash;
 
     return new Promise((resolve, reject) => {
         if (process.env.DEBUG) {
-            console.time(sql);
+            hash = (Math.random() + 1).toString(36).substring(7);
+            console.time(hash + ':' + sql);
         }
         pool.query(sql, args, (err, res) => {
             if (process.env.DEBUG) {
-                console.timeEnd(sql);
+                console.timeEnd(hash + ':' + sql);
             }
             if (err) reject(err);
             resolve(res);
