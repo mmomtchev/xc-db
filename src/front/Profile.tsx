@@ -1,5 +1,6 @@
 import React from 'react';
 import {useMatch} from 'react-router-dom';
+import {useIntl} from 'react-intl';
 
 import round from '../lib/round';
 import {flightData, serverUrl, useDispatch, useSelector} from './store';
@@ -10,7 +11,7 @@ import {FlightSegment} from '../lib/flight';
 import {debug} from '../lib/debug';
 import {fetchFilters} from './Settings';
 
-function tpLine(ctx: CanvasRenderingContext2D, height: number, label: string, x: number) {
+function tpLine(ctx: CanvasRenderingContext2D, height: number, label: string, x: number, offset: boolean) {
     ctx.strokeStyle = '#333333';
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -20,7 +21,7 @@ function tpLine(ctx: CanvasRenderingContext2D, height: number, label: string, x:
     ctx.font = '30px system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue"';
     ctx.fillStyle = '#333333';
     ctx.textAlign = x < 900 ? 'left' : 'right';
-    ctx.fillText(label, x < 900 ? x + 2 : x - 2, height - 4);
+    ctx.fillText(label, x < 900 ? x + 2 : x - 2, offset ? height - 40 : height - 4);
 }
 
 function altLine(ctx: CanvasRenderingContext2D, altScaling: (number) => number, alt: number) {
@@ -64,6 +65,7 @@ export default function Profile() {
     const flightId = parseInt(useMatch('/launch/:launch/route/:route/flight/:flight/*')?.params?.flight || '') || null;
     const settings = useSelector((state) => state.settings);
     const dispatch = useDispatch();
+    const intl = useIntl();
     const [spinner, setSpinner] = React.useState(0);
 
     React.useEffect(() => {
@@ -88,7 +90,13 @@ export default function Profile() {
 
                     // Draw the TP lines
                     const points = ['TP1', 'TP2', 'TP3', ''];
-                    tpLine(ctx, height, 'Bouclage', segments[0].start);
+                    tpLine(
+                        ctx,
+                        height,
+                        intl.formatMessage({defaultMessage: 'Closing', id: 'h3ShxL'}),
+                        segments[0].start,
+                        true
+                    );
                     for (let s = 0; s < 4; s++) {
                         tpLine(ctx, height, points[s], segments[s].finish);
                     }
