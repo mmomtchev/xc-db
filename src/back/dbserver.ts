@@ -126,7 +126,13 @@ app.get('/launch/search/:str', async (req, res) => {
 });
 
 app.get('/launch/:id', async (req, res) => {
-    const launch = (await db.poolQuery('SELECT * FROM launch_info WHERE id = ?', [req.params.id]))[0];
+    const r = await db.poolQuery(
+        'SELECT launch_info.*, FLOOR(((direction + 22.5) % 360) / 45) AS cardinal,count(*) AS occurrence' +
+            ' FROM launch_info LEFT JOIN wind ON (ROUND(launch_info.lat * 4)/4 = wind.lat AND ROUND(launch_info.lng * 4)/4 = wind.lng)' +
+            ' WHERE id=? GROUP BY cardinal ORDER BY cardinal ASC',
+        [req.params.id]
+    );
+    const launch = r[0];
     if (!launch) return res.json({});
     const name = await db.poolQuery(
         'SELECT name, great_circle(lat, lng, ?, ?) AS launch_distance FROM launch_official ORDER BY launch_distance ASC LIMIT 1',
@@ -136,6 +142,9 @@ app.get('/launch/:id', async (req, res) => {
     if (name[0]['launch_distance'] < 3) {
         launch['name'] = name[0]['name'];
     }
+    launch['wind'] = r.map((l) => l['occurrence']);
+    delete launch['occurrence'];
+    delete launch['cardinal'];
     res.json(launch);
 });
 

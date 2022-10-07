@@ -23,6 +23,7 @@ export type LaunchInfo = {
     lng: number;
     flights: number;
     score: number;
+    wind: number[];
 };
 
 export type RouteInfo = {

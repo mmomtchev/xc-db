@@ -6,6 +6,7 @@ import {flightData, LaunchInfo, serverUrl, useDispatch, useSelector} from './sto
 import Info from './Info';
 import {debug} from '../lib/debug';
 import {fetchFilters} from './Settings';
+import WindRose from './WindRose';
 
 export function Launch() {
     const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
@@ -61,6 +62,9 @@ export function Launch() {
                 label={intl.formatMessage({defaultMessage: 'Average score', id: '/0WDGe'})}
                 text={(launch.score / launch.flights).toFixed(2)}
             />
+            <Info label={intl.formatMessage({defaultMessage: 'Yearly average wind', id: '88r8IX'})}>
+                <WindRose className='wind-rose' wind={launch.wind} />
+            </Info>
         </div>
     );
 }

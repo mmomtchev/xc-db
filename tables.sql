@@ -123,19 +123,24 @@ CREATE TABLE wind (
     lng DECIMAL(5,2) NOT NULL,
     speed TINYINT UNSIGNED NOT NULL,
     direction SMALLINT UNSIGNED NOT NULL,
-    PRIMARY KEY (date, lat, lng)
+    PRIMARY KEY (date, lat, lng),
+    INDEX (lat, lng)
 );
 
 CREATE VIEW route_info AS
     SELECT route_id AS id,
-        AVG(p1_lat) AS c1_lat, AVG(p1_lng) AS c1_lng, AVG(p2_lat) AS c2_lat, AVG(p2_lng) AS c2_lng, AVG(p3_lat) AS c3_lat, AVG(p3_lng) AS c3_lng,
+        AVG(p1_lat) AS c1_lat, AVG(p1_lng) AS c1_lng,
+        AVG(p2_lat) AS c2_lat, AVG(p2_lng) AS c2_lng,
+        AVG(p3_lat) AS c3_lat, AVG(p3_lng) AS c3_lng,
         AVG(distance) AS avg_distance, AVG(score) AS avg_score, MAX(distance) AS max_distance, MAX(score) AS max_score,
         COUNT(*) AS flights
     FROM flight NATURAL JOIN flight_extra WHERE route_id IS NOT NULL GROUP BY route_id;
 
 CREATE VIEW route_debug AS
     SELECT flight.id as flight_id, route_info.id as route_id, flight_url,
-        great_circle(p1_lat, p1_lng, c1_lat, c1_lng) AS d1, great_circle(p2_lat, p2_lng, c2_lat, c2_lng) AS d2, great_circle(p3_lat, p3_lng, c3_lat, c3_lng) AS d3
+        great_circle(p1_lat, p1_lng, c1_lat, c1_lng) AS d1,
+        great_circle(p2_lat, p2_lng, c2_lat, c2_lng) AS d2,
+        great_circle(p3_lat, p3_lng, c3_lat, c3_lng) AS d3
     FROM flight NATURAL JOIN flight_extra FULL JOIN route_info;
 
 CREATE VIEW launch_info AS
@@ -152,4 +157,5 @@ CREATE VIEW flight_info AS
         flight_extra.date, MONTH(flight_extra.date) as month,
         wind.direction AS wind_direction
     FROM flight NATURAL LEFT JOIN flight_extra 
-    JOIN wind ON (flight_extra.date = wind.date AND ROUND(flight_extra.launch_lat * 4)/4 = wind.lat AND ROUND(flight_extra.launch_lng * 4)/4 = wind.lng);
+    JOIN wind ON (flight_extra.date = wind.date
+        AND ROUND(flight_extra.launch_lat * 4)/4 = wind.lat AND ROUND(flight_extra.launch_lng * 4)/4 = wind.lng);
