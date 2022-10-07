@@ -35,6 +35,7 @@ export type RouteInfo = {
     avgDistance: number;
     maxDistance: number;
     tp: number[][];
+    wind: number[];
 };
 
 export const SQLRouteInfo = (route) =>
@@ -51,7 +52,11 @@ export const SQLRouteInfo = (route) =>
             [route.c1_lng, route.c1_lat],
             [route.c2_lng, route.c2_lat],
             [route.c3_lng, route.c3_lat]
-        ]
+        ],
+        wind:
+            route.wind_directions &&
+            route.wind_directions.split &&
+            route.wind_directions.split(',').map((v) => parseInt(v))
     } as RouteInfo);
 
 export type FlightInfo = {

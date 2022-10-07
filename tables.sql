@@ -13,12 +13,17 @@ DROP TABLE IF EXISTS launch_official;
 
 DROP FUNCTION IF EXISTS sup;
 DROP FUNCTION IF EXISTS great_circle;
+DROP FUNCTION IF EXISTS round_to;
+DROP FUNCTION IF EXISTS close_to;
+DROP FUNCTION IF EXISTS cardinal_direction;
+DROP FUNCTION IF EXISTS wind_distribution;
 
 -- Great circle distance - more than enough for distances of less than 5km with 10m precision
 -- (no need to optimize the SQRT - it is far less expensive than the rest)
 -- (yes, MySQL has native support for geography types
 -- but it is very ill-suited for this application)
 DELIMITER //
+
 CREATE FUNCTION great_circle ( lat0 FLOAT, lng0 FLOAT, lat1 FLOAT, lng1 FLOAT )
 RETURNS FLOAT
 BEGIN
@@ -37,6 +42,50 @@ CREATE FUNCTION sup ( a FLOAT, b FLOAT )
 RETURNS FLOAT
 BEGIN
     RETURN IF (a > b, a, b);
+END; //
+
+CREATE FUNCTION round_to ( a FLOAT, acc FLOAT )
+RETURNS FLOAT
+BEGIN
+    DECLARE multiplier FLOAT;
+
+    SET multiplier = 1 / acc;
+
+    RETURN ROUND(a * multiplier) / multiplier;
+END; //
+
+CREATE FUNCTION close_to ( a FLOAT, b FLOAT, acc FLOAT )
+RETURNS BOOLEAN
+BEGIN
+    RETURN ABS(a - b) < acc;
+END; //
+
+-- 0:N 1:NE 2:E 3:SE 4:S 5:SW 6:W 7:NW
+CREATE FUNCTION cardinal_direction ( direction FLOAT )
+RETURNS FLOAT
+BEGIN
+    DECLARE multiplier FLOAT;
+
+    RETURN FLOOR(((direction + 22.5) % 360) / 45);
+END; //
+
+CREATE AGGREGATE FUNCTION wind_distribution ( val SMALLINT ) RETURNS VARCHAR(128)
+BEGIN
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+        BEGIN
+            DECLARE res VARCHAR(128);
+            SET res = (SELECT GROUP_CONCAT(occurrences) FROM
+                (SELECT COUNT(cardinal)-1 AS occurrences FROM dist GROUP BY cardinal ORDER BY cardinal ASC) AS aggr);
+            DROP TEMPORARY TABLE dist;
+            RETURN res;
+        END;
+
+    CREATE TEMPORARY TABLE dist (cardinal TINYINT);
+    INSERT INTO dist (cardinal) VALUES (0), (1), (2), (3), (4), (5), (6), (7);
+    LOOP
+        FETCH GROUP NEXT ROW;
+        INSERT INTO dist VALUES (cardinal_direction(val));
+    END LOOP;
 END; //
 
 DELIMITER ;
@@ -148,8 +197,10 @@ CREATE VIEW launch_info AS
         AVG(launch_lat) AS lat, AVG(launch_lng) AS lng, SUM(score) AS score, COUNT(*) AS flights
     FROM flight NATURAL JOIN flight_extra WHERE launch_id IS NOT NULL GROUP BY launch_id;
 
+-- The floating point comparison is dangerous but it appears to be working
+-- (and it is not trivial to remove)
 CREATE VIEW flight_info AS
-    SELECT 
+    SELECT
         flight.id AS id, launch_id, route_id,
         launch_point, landing_point, p1_point, p2_point, p3_point, e1_point, e2_point,
         launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng,

@@ -126,8 +126,10 @@ app.get('/launch/search/:str', async (req, res) => {
 });
 
 app.get('/launch/:id', async (req, res) => {
+    // TODO Take care of the floating point comparison
+    // (it appears to work and it is not trivial to remove because the MariaDB's optimizer depends on it)
     const r = await db.poolQuery(
-        'SELECT launch_info.*, FLOOR(((direction + 22.5) % 360) / 45) AS cardinal,count(*) AS occurrence' +
+        'SELECT launch_info.*, cardinal_direction(direction) AS cardinal,count(*) AS occurrence' +
             ' FROM launch_info LEFT JOIN wind ON (ROUND(launch_info.lat * 4)/4 = wind.lat AND ROUND(launch_info.lng * 4)/4 = wind.lng)' +
             ' WHERE id=? GROUP BY cardinal ORDER BY cardinal ASC',
         [req.params.id]
@@ -184,7 +186,7 @@ app.get('/flight/route/:route', async (req, res) => {
 
 app.get('/route/list', async (req, res) => {
     const r = await db.poolQuery(
-        'SELECT route_info.*, count(*) AS flights_selected FROM route_info JOIN flight_info' +
+        'SELECT route_info.*, COUNT(*) AS flights_selected FROM route_info JOIN flight_info' +
             ` WHERE ${filters(req, 'flight_info')} GROUP BY route_info.id ${ordering(req)} LIMIT 1000`
     );
     res.json(r);
@@ -192,7 +194,8 @@ app.get('/route/list', async (req, res) => {
 
 app.get('/route/launch/:launch', async (req, res) => {
     const r = await db.poolQuery(
-        'SELECT route_info.*, count(*) AS flights_selected' +
+        'SELECT route_info.*, COUNT(*) AS flights_selected,' +
+            ' wind_distribution(wind_direction) AS wind_directions' +
             ' FROM flight_info JOIN route_info ON (flight_info.route_id = route_info.id)' +
             ` WHERE launch_id = ? AND ${filters(req)} GROUP BY route_id ${ordering(req)}`,
         [req.params.launch]

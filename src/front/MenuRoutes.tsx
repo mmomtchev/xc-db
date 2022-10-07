@@ -4,6 +4,7 @@ import {useIntl} from 'react-intl';
 import {CSSTransition} from 'react-transition-group';
 
 import Info from './Info';
+import WindRose from './WindRose';
 import {FlightList} from './MenuFlights';
 import {fetchFilters} from './Settings';
 import {RouteInfo, useDispatch, useSelector, SQLRouteInfo, flightData, serverUrl} from './store';
@@ -106,6 +107,11 @@ export function Route(props: {route: RouteInfo}) {
                 label={intl.formatMessage({defaultMessage: 'Matching launch/selection', id: 'Iwz+XF'})}
                 text={props.route.flightsSelected.toFixed(0)}
             />
+            {props.route.wind && (
+                <Info label={intl.formatMessage({defaultMessage: 'Wind distribution', id: 'Z3+fag'})}>
+                    <WindRose className='wind-rose' color='black' wind={props.route.wind} />
+                </Info>
+            )}
             {routeId !== null && routeId === props.route.id && <FlightList />}
         </div>
     );
