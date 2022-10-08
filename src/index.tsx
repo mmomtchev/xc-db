@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {createBrowserRouter, RouterProvider} from 'react-router-dom';
 import {IntlProvider} from 'react-intl';
+import ReactGA from 'react-ga';
+
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.bundle.js';
 import './index.css';
@@ -17,6 +19,10 @@ import en from './compiled-lang/en.json';
 
 const userLang = (navigator.language || 'en-US').split('-')[0];
 const messages = {fr, en};
+
+if (process.env.REACT_APP_XCDB_GA) {
+    ReactGA.initialize(process.env.REACT_APP_XCDB_GA);
+}
 
 const router = createBrowserRouter([
     {
