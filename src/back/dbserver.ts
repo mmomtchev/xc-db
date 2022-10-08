@@ -3,12 +3,14 @@ import express, {Request} from 'express';
 import cors from 'cors';
 import responseTime from 'response-time';
 import gdal from 'gdal-async';
+import vtpbf from 'vt-pbf';
+import toBuffer from 'typedarray-to-buffer';
 
 import * as db from './db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
-import {tileToLongitude, tileToLatitude, pointDecimation} from '../lib/geo';
+import {tileToLongitude, tileToLatitude, pointDecimation, latToTileTransformer, lngToTileTransformer} from '../lib/geo';
 
 const version = global.__BUILD__ === undefined ? 'development' : global.__BUILD__;
 const app = express();
@@ -312,20 +314,23 @@ app.get('/geojson/point/route/:route/:z/:y/:x', async (req, res) => {
 
     const simplified = pointDecimation(z, left, top, r as Point[]);
 
-    const geojson = {
-        type: 'FeatureCollection',
+    // MVT expects tile pixel coordinates (4096x4096 inside each tile)
+    const lngToTile = lngToTileTransformer(z, left);
+    const latToTile = latToTileTransformer(z, top);
+    const geojsonLike = {
         features: simplified.map((row) => ({
-            type: 'Feature',
-            geometry: {
-                type: 'Point',
-                coordinates: [row['lng'], row['lat']]
-            },
-            properties: {
+            type: 1,
+            geometry: [[lngToTile(row['lng']), latToTile(row['lat'])]],
+            tags: {
                 d: row['alt']
             }
         }))
     };
-    res.json(geojson);
+
+    const pbf = toBuffer(vtpbf.fromGeojsonVt({geojsonLayer: geojsonLike}));
+
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.end(pbf);
 });
 
 app.get('/height', async (req, res) => {

@@ -11,6 +11,38 @@ export function tileToLatitude(zoom: number, y: number): number {
     return (Math.atan(Math.sinh(Math.PI - (y / 2 ** zoom) * 2 * Math.PI)) * 180) / Math.PI;
 }
 
+const vectorTileSize = 4096;
+
+/**
+ * Longitude to coordinates relative to the tile (4096x4096)
+ * 2-step transformer to avoid repeating calculations that depend only on the tile position
+ **/
+export function lngToTileTransformer(zoom: number, left: number): (lng: number) => number {
+    const tileGeoSize = 360 / 2 ** zoom;
+    return (lng) => ((lng - left) / tileGeoSize) * vectorTileSize;
+}
+
+function webMercatorLatitudeProjection(zoomSize: number, lat: number) {
+    return (
+        (vectorTileSize / (2 * Math.PI)) *
+        zoomSize *
+        (Math.PI - Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 180 / 2)))
+    );
+}
+
+/**
+ * Latitude to coordinates relative to the tile (4096x4096)
+ * 2-step transformer
+ */
+export function latToTileTransformer(zoom: number, top: number): (lat: number) => number {
+    // This works by applying the Web Mercator projection to both the top of the tile and the given latitude
+    // and finding the difference
+    const zoomSize = 2 ** zoom;
+    const topProjected = webMercatorLatitudeProjection(zoomSize, top);
+
+    return (lat) => webMercatorLatitudeProjection(zoomSize, lat) - topProjected;
+}
+
 const tileSize = 128;
 /**
  * O(n) point decimation for the specified zoom level if it was to be displayed as a 128px wide image

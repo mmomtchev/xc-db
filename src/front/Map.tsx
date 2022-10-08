@@ -3,6 +3,7 @@ import {useNavigate} from 'react-router-dom';
 import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
+import MVT from 'ol/format/MVT';
 import {boundingExtent} from 'ol/extent';
 import {
     RFeatureUIEvent,
@@ -28,7 +29,8 @@ import {fetchFilters} from './Settings';
 import {Circle, Fill, Stroke, Style} from 'ol/style';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
-const reader = new GeoJSON({featureProjection: 'EPSG:4326'});
+const geojson = new GeoJSON({featureProjection: 'EPSG:4326'});
+const mvt = new MVT();
 const extent = boundingExtent([fromLonLat(config.map.extent[0]), fromLonLat(config.map.extent[1])]);
 
 const iconSizes = [
@@ -114,7 +116,7 @@ export function Map() {
             </RLayers>
             <RLayerCluster
                 zIndex={20}
-                format={reader}
+                format={geojson}
                 url={`${serverUrl}/geojson/launch/list?${fetchFilters(settings)}`}
                 onClick={click}
                 onPointerEnter={cursorPointer}
@@ -148,7 +150,7 @@ export function Map() {
             </RLayerVector>
             {route && route.id ? (
                 <RLayerVectorTile
-                    format={reader}
+                    format={mvt}
                     url={`${serverUrl}/geojson/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
                     style={(feature) => {
                         const density = Math.round(+feature.getProperties().d / 1.5 + 63);
