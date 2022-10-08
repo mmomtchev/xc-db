@@ -6,7 +6,7 @@ DROP VIEW IF EXISTS route_debug;
 DROP TABLE IF EXISTS wind;
 DROP TABLE IF EXISTS point;
 DROP TABLE IF EXISTS flight_extra;
-DROP TABLE IF exists flight;
+DROP TABLE IF EXISTS flight;
 DROP TABLE IF EXISTS route;
 DROP TABLE IF EXISTS launch;
 DROP TABLE IF EXISTS launch_official;
@@ -69,6 +69,9 @@ BEGIN
     RETURN FLOOR(((direction + 22.5) % 360) / 45);
 END; //
 
+-- aggregate the wind distribution in the form of
+-- N,NE,E,SE,S,SW,W,NW
+-- where each one is the number of occurrences
 CREATE AGGREGATE FUNCTION wind_distribution ( val SMALLINT ) RETURNS VARCHAR(128)
 BEGIN
     DECLARE CONTINUE HANDLER FOR NOT FOUND
@@ -90,7 +93,8 @@ END; //
 
 DELIMITER ;
 
-
+-- the launch coordinates are defined only by the geometric center of the launch coordinates
+-- of all flights that have been classified as having this launch
 CREATE TABLE launch (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (id)
@@ -104,6 +108,8 @@ CREATE TABLE launch_official (
     PRIMARY KEY (id)
 );
 
+-- the route coordinates are defined only by the geometric center of the route coordinates
+-- of all flights that have been classified as following this route
 CREATE TABLE route (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
 );
@@ -185,6 +191,7 @@ CREATE VIEW route_info AS
         COUNT(*) AS flights
     FROM flight NATURAL JOIN flight_extra WHERE route_id IS NOT NULL GROUP BY route_id;
 
+-- used only for debugging the classifier
 CREATE VIEW route_debug AS
     SELECT flight.id as flight_id, route_info.id as route_id, flight_url,
         great_circle(p1_lat, p1_lng, c1_lat, c1_lng) AS d1,
