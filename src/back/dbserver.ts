@@ -6,7 +6,7 @@ import gdal from 'gdal-async';
 import vtpbf from 'vt-pbf';
 import toBuffer from 'typedarray-to-buffer';
 
-import * as db from './db';
+import * as db from '../lib/db';
 import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';

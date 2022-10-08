@@ -4,7 +4,7 @@ import {NdArray} from 'ndarray';
 import 'ndarray-gdal';
 import {Point} from './flight';
 
-import config from '../config.json';
+import {config} from './db';
 
 const last = {
     file: '',

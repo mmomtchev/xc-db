@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 
-import * as db from './db';
+import * as db from '../lib/db';
 
 const data = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
 

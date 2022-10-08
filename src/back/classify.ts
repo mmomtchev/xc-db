@@ -1,4 +1,4 @@
-import * as db from './db';
+import * as db from '../lib/db';
 
 // This is an implementation of an algorithm inspired by K-means clustering
 // The main difference is that in K-means clustering the number of classes is predetermined

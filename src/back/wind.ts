@@ -1,7 +1,7 @@
 import * as gdal from 'gdal-async';
 import 'ndarray-gdal';
 
-import * as db from './db';
+import * as db from '../lib/db';
 
 async function main() {
     const buffer = {};

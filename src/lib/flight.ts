@@ -1,6 +1,6 @@
 import GeographicLib from 'geographiclib';
 
-import config from '../config.json';
+import {config} from './db';
 
 const geod = GeographicLib.Geodesic.WGS84;
 

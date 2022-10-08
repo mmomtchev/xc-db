@@ -4,7 +4,7 @@ import * as crypto from 'crypto';
 import IGCParser from 'igc-parser';
 import {solver, scoringRules as scoring} from 'igc-xc-score';
 
-import * as db from './db';
+import * as db from '../lib/db';
 
 function triId(flight: IGCParser.IGCFile) {
     const top = flight.fixes.reduce(
