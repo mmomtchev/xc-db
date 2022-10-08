@@ -127,7 +127,7 @@ app.get('/launch/search/:str', async (req, res) => {
     res.json(r);
 });
 
-app.get('/launch/:id', async (req, res) => {
+app.get('/launch/:id([0-9]+)', async (req, res) => {
     // TODO Take care of the floating point comparison
     // (it appears to work and it is not trivial to remove because the MariaDB's optimizer depends on it)
     const r = await db.poolQuery(
@@ -157,12 +157,12 @@ app.get('/flight/list', async (req, res) => {
     res.json(r);
 });
 
-app.get('/flight/:id', async (req, res) => {
+app.get('/flight/:id([0-9]+)', async (req, res) => {
     const r = await db.poolQuery('SELECT * FROM flight_info WHERE id = ?', [req.params.id]);
     res.json(r);
 });
 
-app.get('/flight/launch/:launch', async (req, res) => {
+app.get('/flight/launch/:launch([0-9]+)', async (req, res) => {
     const r = await db.poolQuery(
         `SELECT * FROM flight_info WHERE launch_id = ? AND ${filters(req)} ORDER BY score DESC`,
         [req.params.launch]
@@ -170,7 +170,7 @@ app.get('/flight/launch/:launch', async (req, res) => {
     res.json(r);
 });
 
-app.get('/flight/route/:route/launch/:launch', async (req, res) => {
+app.get('/flight/route/:route([0-9]+)/launch/:launch([0-9]+)', async (req, res) => {
     const r = await db.poolQuery(
         `SELECT * FROM flight_info WHERE route_id = ? AND launch_id = ? AND ${filters(req)} ORDER BY score DESC`,
         [req.params.route, req.params.launch]
@@ -178,7 +178,7 @@ app.get('/flight/route/:route/launch/:launch', async (req, res) => {
     res.json(r);
 });
 
-app.get('/flight/route/:route', async (req, res) => {
+app.get('/flight/route/:route([0-9]+)', async (req, res) => {
     const r = await db.poolQuery(
         `SELECT * FROM flight_info WHERE route_id = ? AND ${filters(req)} ORDER BY score DESC`,
         [req.params.route]
@@ -194,7 +194,7 @@ app.get('/route/list', async (req, res) => {
     res.json(r);
 });
 
-app.get('/route/launch/:launch', async (req, res) => {
+app.get('/route/launch/:launch([0-9]+)', async (req, res) => {
     const r = await db.poolQuery(
         'SELECT route_info.*, COUNT(*) AS flights_selected,' +
             ' wind_distribution(wind_direction) AS wind_directions' +
@@ -206,7 +206,7 @@ app.get('/route/launch/:launch', async (req, res) => {
 });
 
 // Produce an aggregated vertical profile of all flights on a route
-app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (req, res) => {
+app.get(['/point/route/:route([0-9]+)/launch/:launch([0-9]+)', '/point/route/:route([0-9]+)'], async (req, res) => {
     const flights =
         req.params.launch !== undefined
             ? await db.poolQuery(`SELECT * from flight_info WHERE launch_id = ? AND route_id = ? AND ${filters(req)}`, [
@@ -273,7 +273,7 @@ app.get(['/point/route/:route/launch/:launch', '/point/route/:route'], async (re
     res.json(segments);
 });
 
-app.get('/point/flight/:flight', async (req, res) => {
+app.get('/point/flight/:flight([0-9]+)', async (req, res) => {
     const flight = (await db.poolQuery('SELECT * from flight_info WHERE id = ?', [req.params.flight]))[0];
     const points = await db.poolQuery(
         'SELECT flight.id as flight_id, point.id, alt, lat, lng' +
@@ -295,7 +295,7 @@ app.get('/point/flight/:flight', async (req, res) => {
     res.json(segments);
 });
 
-app.get('/:format(mvt|geojson)/point/route/:route/:z/:y/:x', async (req, res) => {
+app.get('/:format(mvt|geojson)/point/route/:route([0-9]+)/:z([0-9]+)/:y([0-9]+)/:x([0-9]+)', async (req, res) => {
     const x = +req.params.x;
     const y = +req.params.y;
     const z = +req.params.z;
