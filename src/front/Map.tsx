@@ -151,7 +151,7 @@ export function Map() {
             {route && route.id ? (
                 <RLayerVectorTile
                     format={mvt}
-                    url={`${serverUrl}/geojson/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
+                    url={`${serverUrl}/mvt/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
                     style={(feature) => {
                         const density = Math.round(+feature.getProperties().d / 1.5 + 63);
                         if (!density) return skyLinesStyles[0];

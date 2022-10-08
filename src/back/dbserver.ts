@@ -295,7 +295,7 @@ app.get('/point/flight/:flight', async (req, res) => {
     res.json(segments);
 });
 
-app.get('/geojson/point/route/:route/:z/:y/:x', async (req, res) => {
+app.get('/:format(mvt|geojson)/point/route/:route/:z/:y/:x', async (req, res) => {
     const x = +req.params.x;
     const y = +req.params.y;
     const z = +req.params.z;
@@ -314,23 +314,48 @@ app.get('/geojson/point/route/:route/:z/:y/:x', async (req, res) => {
 
     const simplified = pointDecimation(z, left, top, r as Point[]);
 
-    // MVT expects tile pixel coordinates (4096x4096 inside each tile)
-    const lngToTile = lngToTileTransformer(z, left);
-    const latToTile = latToTileTransformer(z, top);
-    const geojsonLike = {
-        features: simplified.map((row) => ({
-            type: 1,
-            geometry: [[lngToTile(row['lng']), latToTile(row['lat'])]],
-            tags: {
-                d: row['alt']
+    switch (req.params.format) {
+        case 'mvt':
+            {
+                // MVT expects tile pixel coordinates (4096x4096 inside each tile)
+                const lngToTile = lngToTileTransformer(z, left);
+                const latToTile = latToTileTransformer(z, top);
+                const geojsonLike = {
+                    features: simplified.map((row) => ({
+                        type: 1,
+                        geometry: [[lngToTile(row['lng']), latToTile(row['lat'])]],
+                        tags: {
+                            d: row['alt']
+                        }
+                    }))
+                };
+
+                const pbf = toBuffer(vtpbf.fromGeojsonVt({geojsonLayer: geojsonLike}));
+                res.setHeader('Content-Type', 'application/octet-stream');
+                res.end(pbf);
             }
-        }))
-    };
-
-    const pbf = toBuffer(vtpbf.fromGeojsonVt({geojsonLayer: geojsonLike}));
-
-    res.setHeader('Content-Type', 'application/octet-stream');
-    res.end(pbf);
+            break;
+        case 'geojson':
+            {
+                const geojson = {
+                    type: 'FeatureCollection',
+                    features: simplified.map((row) => ({
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [row['lng'], row['lat']]
+                        },
+                        properties: {
+                            d: row['alt']
+                        }
+                    }))
+                };
+                res.json(geojson);
+            }
+            break;
+        default:
+            throw new Error('invalid format');
+    }
 });
 
 app.get('/height', async (req, res) => {
