@@ -8,7 +8,7 @@ export const config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', '
 let db: mysql.Connection;
 let pool: mysql.Pool;
 
-function connect() {
+async function connect() {
     if (!db) {
         db = mysql.createConnection({
             database: config.db.db,
@@ -17,9 +17,12 @@ function connect() {
             password: config.db.pass
         });
 
-        db.connect(function (err) {
-            if (err) throw err;
-            console.log('Connected!', config.db);
+        return new Promise<void>((res, rej) => {
+            db.connect(function (err) {
+                if (err) rej(err);
+                console.log('Connected!', config.db);
+                res();
+            });
         });
     }
 }
@@ -36,8 +39,8 @@ function createPool() {
     }
 }
 
-export function query(sql, args?: unknown[]): Promise<unknown[]> {
-    if (!db) connect();
+export async function query(sql, args?: unknown[]): Promise<unknown[]> {
+    if (!db) await connect();
     let hash;
 
     return new Promise((resolve, reject) => {
@@ -50,6 +53,11 @@ export function query(sql, args?: unknown[]): Promise<unknown[]> {
                 console.timeEnd(hash + ':' + sql);
             }
             if (err) {
+                try {
+                    db.destroy();
+                } catch (e) {
+                    console.error(e);
+                }
                 db = null;
                 reject(err);
             }
