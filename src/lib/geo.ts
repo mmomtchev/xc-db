@@ -1,4 +1,6 @@
 import ndarray from 'ndarray';
+
+import {config} from './db';
 import {Point} from '../lib/flight';
 
 /** Tile number to longitude for the zoom level in EPSG:3857 (Web Mercator) */
@@ -43,7 +45,7 @@ export function latToTileTransformer(zoom: number, top: number): (lat: number) =
     return (lat) => webMercatorLatitudeProjection(zoomSize, lat) - topProjected;
 }
 
-const tileSize = 128;
+const tileSize = config.skylines.resolution;
 /**
  * O(n) point decimation for the specified zoom level if it was to be displayed as a 128px wide image
  * (yes, we are cheap, we will do more when we have a sponsor)

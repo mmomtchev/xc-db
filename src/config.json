@@ -22,16 +22,7 @@
         ]
     },
     "skylines": {
-        "extent": [
-            -5,
-            55,
-            10,
-            40
-        ],
-        "pixelSize": [
-            0.01,
-            0.01
-        ]
+        "resolution": 128
     },
     "tracklog": {
         "points": 1024
