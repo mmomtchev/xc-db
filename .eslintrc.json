@@ -25,7 +25,8 @@
                 "avoidEscape": true
             }
         ],
-        "no-console": "warn"
+        "no-console": "warn",
+        "@typescript-eslint/no-non-null-assertion": "off"
     },
     "settings": {
         "react": {

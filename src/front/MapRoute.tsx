@@ -7,7 +7,7 @@ import {RouteInfo} from './store';
 
 export default function MapRoute(props: {route: RouteInfo; highlight?: boolean}) {
     const context = useContext(RContext);
-    const pointRes = getPointResolution(context.map.getView().getProjection(), 1, fromLonLat(props.route.tp[0]));
+    const pointRes = getPointResolution(context.map!.getView().getProjection(), 1, fromLonLat(props.route.tp[0]));
     const radius = Math.max(3000, props.route.avgDistance * 0.05 * 1000) / pointRes;
 
     return (
@@ -21,8 +21,11 @@ export default function MapRoute(props: {route: RouteInfo; highlight?: boolean})
                         <React.Fragment key={i}>
                             <RFeature geometry={new Circle(fromLonLat(props.route.tp[i]), radius)} />
                             <RFeature geometry={new Point(fromLonLat(props.route.tp[i]))}>
-                                <RStyle.RStyle>
-                                    <RStyle.RText text={`TP${i + 1}`} font='bold 25px sans-serif' />
+                                <RStyle.RStyle zIndex={1000}>
+                                    <RStyle.RText text={`TP${i + 1}`} font='bold 25px sans-serif'>
+                                        <RStyle.RStroke color='black' width={3} />
+                                        <RStyle.RFill color='red' />
+                                    </RStyle.RText>
                                 </RStyle.RStyle>
                             </RFeature>
                         </React.Fragment>

@@ -1,6 +1,6 @@
 import React from 'react';
 import {useMatch} from 'react-router-dom';
-import {useIntl} from 'react-intl';
+import {IntlShape, useIntl} from 'react-intl';
 
 import round from '../lib/round';
 import {flightData, serverUrl, useDispatch, useSelector} from './store';
@@ -10,6 +10,16 @@ import config from '../config.json';
 import {FlightSegment} from '../lib/flight';
 import {debug} from '../lib/debug';
 import {fetchFilters} from './Settings';
+
+const tpNames = (intl: IntlShape) => ({
+    launch: intl.formatMessage({defaultMessage: 'Launch', id: 'ewx2b7'}),
+    e1: intl.formatMessage({defaultMessage: 'Closing', id: 'h3ShxL'}),
+    p1: 'TP1',
+    p2: 'TP2',
+    p3: 'TP3',
+    e2: intl.formatMessage({defaultMessage: 'Closing', id: 'h3ShxL'}),
+    landing: intl.formatMessage({defaultMessage: 'Landing', id: 'sRp4UE'})
+});
 
 function tpLine(ctx: CanvasRenderingContext2D, height: number, label: string, x: number, offset: boolean) {
     ctx.strokeStyle = '#333333';
@@ -89,16 +99,9 @@ export default function Profile() {
                     debug('loaded point - drawing', segments);
 
                     // Draw the TP lines
-                    const points = ['TP1', 'TP2', 'TP3', ''];
-                    tpLine(
-                        ctx,
-                        height,
-                        intl.formatMessage({defaultMessage: 'Closing', id: 'h3ShxL'}),
-                        segments[0].start,
-                        true
-                    );
-                    for (let s = 0; s < 4; s++) {
-                        tpLine(ctx, height, points[s], segments[s].finish);
+                    tpLine(ctx, height, tpNames(intl)[segments[0].startName], segments[0].start, true);
+                    for (let s = 0; s < segments.length; s++) {
+                        tpLine(ctx, height, tpNames(intl)[segments[s].finishName], segments[s].finish, s % 2 === 1);
                     }
 
                     // Draw the altitude lines

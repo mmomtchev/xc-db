@@ -7,7 +7,7 @@ import vtpbf from 'vt-pbf';
 import toBuffer from 'typedarray-to-buffer';
 
 import * as db from '../lib/db';
-import {Point, triPoints, triScaleSegments, triSegmentFlight, interpolate} from '../lib/flight';
+import {Point, triPoints, fullPoints, scaleSegments, segmentFlight, interpolate} from '../lib/flight';
 import {terrainUnderPath} from '../lib/dem';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
 import {tileToLongitude, tileToLatitude, pointDecimation, latToTileTransformer, lngToTileTransformer} from '../lib/geo';
@@ -243,13 +243,13 @@ app.get(['/point/route/:route([0-9]+)/launch/:launch([0-9]+)', '/point/route/:ro
         }
         for (const id of Object.keys(flight_points)) {
             const f = flights.find((x) => x['id'] == id);
-            flight_segments.push(triSegmentFlight(f, flight_points[id]));
+            flight_segments.push(segmentFlight(triPoints, f, flight_points[id]));
         }
     }
     const best = flights[0];
 
     // Place the 3 TPs of the best flight on the 1024 point linear scale
-    const segments = triScaleSegments(best);
+    const segments = scaleSegments(triPoints, best);
 
     // Fill each segment
     for (let i = 0; i < triPoints.length - 1; i++) {
@@ -280,10 +280,10 @@ app.get('/point/flight/:flight([0-9]+)', async (req, res) => {
             ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE flight.id = ?',
         [req.params.flight]
     );
-    const flight_points = triSegmentFlight(flight, points);
-    const segments = triScaleSegments(flight);
+    const flight_points = segmentFlight(fullPoints, flight, points);
+    const segments = scaleSegments(fullPoints, flight);
 
-    for (let i = 0; i < triPoints.length - 1; i++) {
+    for (let i = 0; i < fullPoints.length - 1; i++) {
         const seg = interpolate(flight_points[i], segments[i].finish - segments[i].start);
         await terrainUnderPath(seg);
         segments[i].alt = seg.map((x) => x.alt);

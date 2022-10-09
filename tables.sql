@@ -24,12 +24,12 @@ DROP FUNCTION IF EXISTS wind_distribution;
 -- but it is very ill-suited for this application)
 DELIMITER //
 
-CREATE FUNCTION great_circle ( lat0 FLOAT, lng0 FLOAT, lat1 FLOAT, lng1 FLOAT )
-RETURNS FLOAT
+CREATE FUNCTION great_circle ( lat0 DECIMAL(9,6), lng0 DECIMAL(9,6), lat1 DECIMAL(9,6), lng1 DECIMAL(9,6) )
+RETURNS DECIMAL(9,6)
 BEGIN
-    DECLARE lat_d FLOAT;
-    DECLARE lng_d FLOAT;
-    DECLARE lat_m FLOAT;
+    DECLARE lat_d DECIMAL(9,6);
+    DECLARE lng_d DECIMAL(9,6);
+    DECLARE lat_m DECIMAL(9,6);
 
     SET lat_d = RADIANS(lat0) - RADIANS(lat1);
     SET lat_m = (RADIANS(lat0) + RADIANS(lat1)) / 2;
@@ -61,11 +61,9 @@ BEGIN
 END; //
 
 -- 0:N 1:NE 2:E 3:SE 4:S 5:SW 6:W 7:NW
-CREATE FUNCTION cardinal_direction ( direction FLOAT )
-RETURNS FLOAT
+CREATE FUNCTION cardinal_direction ( direction SMALLINT )
+RETURNS TINYINT
 BEGIN
-    DECLARE multiplier FLOAT;
-
     RETURN FLOOR(((direction + 22.5) % 360) / 45);
 END; //
 
@@ -103,8 +101,8 @@ CREATE TABLE launch (
 CREATE TABLE launch_official (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
     name VARCHAR(80) NOT NULL UNIQUE,
-    lat FLOAT NOT NULL,
-    lng FLOAT NOT NULL,
+    lat DECIMAL(9,6) NOT NULL,
+    lng DECIMAL(9,6) NOT NULL,
     PRIMARY KEY (id)
 );
 
@@ -139,20 +137,22 @@ CREATE TABLE flight (
 
 CREATE TABLE flight_extra (
     id MEDIUMINT UNSIGNED NOT NULL,
-    launch_lat FLOAT NOT NULL,
-    launch_lng FLOAT NOT NULL,
-    p1_lat FLOAT NOT NULL,
-    p1_lng FLOAT NOT NULL,
-    p2_lat FLOAT NOT NULL,
-    p2_lng FLOAT NOT NULL,
-    p3_lat FLOAT NOT NULL,
-    p3_lng FLOAT NOT NULL,
-    e1_lat FLOAT NOT NULL,
-    e1_lng FLOAT NOT NULL,
-    e2_lat FLOAT NOT NULL,
-    e2_lng FLOAT NOT NULL,
-    date DATE,
-    glider VARCHAR(20) NOT NULL,
+    launch_lat DECIMAL(9,6) NOT NULL,
+    launch_lng DECIMAL(9,6) NOT NULL,
+    p1_lat DECIMAL(9,6) NOT NULL,
+    p1_lng DECIMAL(9,6) NOT NULL,
+    p2_lat DECIMAL(9,6) NOT NULL,
+    p2_lng DECIMAL(9,6) NOT NULL,
+    p3_lat DECIMAL(9,6) NOT NULL,
+    p3_lng DECIMAL(9,6) NOT NULL,
+    e1_lat DECIMAL(9,6) NOT NULL,
+    e1_lng DECIMAL(9,6) NOT NULL,
+    e2_lat DECIMAL(9,6) NOT NULL,
+    e2_lng DECIMAL(9,6) NOT NULL,
+    landing_lat DECIMAL(9,6) NOT NULL,
+    landing_lng DECIMAL(9,6) NOT NULL,
+    date DATE NOT NULL,
+    glider VARCHAR(30) NOT NULL,
     pilot_url VARCHAR(60) NOT NULL,
     flight_url VARCHAR(60) NOT NULL,
     pilot_name VARCHAR(60) NOT NULL,
@@ -163,8 +163,8 @@ CREATE TABLE flight_extra (
 CREATE TABLE point (
     flight_id MEDIUMINT UNSIGNED NOT NULL,
     id SMALLINT UNSIGNED NOT NULL,
-    lat FLOAT NOT NULL,
-    lng FLOAT NOT NULL,
+    lat DECIMAL(9,6) NOT NULL,
+    lng DECIMAL(9,6) NOT NULL,
     alt SMALLINT NOT NULL,
     time DATETIME NOT NULL,
     PRIMARY KEY (flight_id, id),
@@ -215,5 +215,5 @@ CREATE VIEW flight_info AS
         flight_extra.date, MONTH(flight_extra.date) as month,
         wind.direction AS wind_direction
     FROM flight NATURAL LEFT JOIN flight_extra 
-    JOIN wind ON (flight_extra.date = wind.date
+    LEFT JOIN wind ON (flight_extra.date = wind.date
         AND ROUND(flight_extra.launch_lat * 4)/4 = wind.lat AND ROUND(flight_extra.launch_lng * 4)/4 = wind.lng);

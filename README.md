@@ -3,6 +3,9 @@
 This project is meant both:
 
 -   As a demo of the capabilities of [`gdal-async`](https://github.com/mmomtchev/node-gdal-async.git) in a web environment (Node.js/Express) and [`rlayers`](https://github.com/mmomtchev/rlayers.git) as a React framework for creating maps-centered web applications
+    -   It is an example of a fully asynchronous map application that interacts with a server and which is entirely implemented as React components that fit nicely in the typical React flow control - allowing for example take advantage of standard React CSS animations
+    -   All features on the map are React components and support interaction with the usual React mechanics - even when using more than a thousand of them, the map remains fully responsive and the performance overhead of _rlayers_ compared to raw OpenLayers is minimal
+    -   The back-end allows dynamic displaying of 600 million features (the blue point clouds) from an SQL database with on-the-fly generated MVT vector tiles
 -   As a tool for intermediate-level cross-country paragliding pilots looking for ideas for long-distance flying in France
 
 An alpha version of this project is currently running at [https://xcdb.velivole.fr](https://xcdb.velivole.fr).
@@ -110,11 +113,15 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     With 60 000 flights this should take about 4 hours on a 4 CPU machine.
 
+    **This step should always be run after adding additional flights - in this case it will be much faster.**
+
 9. Run the launch classifier
 
     `node build/back/classify.js launch`
 
     This should be under 10 minutes.
+
+    **This step should always be run after adding additional flights - in this case it will be much faster.**
 
 10. Start the backend in development mode
 
