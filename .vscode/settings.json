@@ -14,6 +14,5 @@
     },
     "editor.formatOnSave": true,
     "editor.tabSize": 4,
-    "editor.detectIndentation": false,
-    "typescript.validate.enable": false
+    "editor.detectIndentation": false
 }

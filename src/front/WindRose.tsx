@@ -5,7 +5,7 @@ import {localizedDirections} from './Intl';
 
 const radius = 100;
 
-export default function WindRose(props: {className: string; color?: string; radius: number; wind: number[]}) {
+export default function WindRose(props: {className: string; color?: string; wind: number[]}) {
     const ref = React.useRef<HTMLCanvasElement>(null);
     const intl = useIntl();
 
@@ -26,7 +26,7 @@ export default function WindRose(props: {className: string; color?: string; radi
 
         ctx.beginPath();
         const max = Math.max(...props.wind);
-        let first = 0;
+        let first;
         for (let i = 0; i < props.wind.length; i++) {
             const angle = i * (Math.PI / 4);
             const r = radius * (props.wind[i] / max);

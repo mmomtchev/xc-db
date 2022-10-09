@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function Info(props: {label: string; text: string}) {
+export default function Info(props: {label: string; text?: string; children?: React.ReactNode}) {
     return (
         <p className='info d-flex flex-row justify-content-between align-items-center'>
             <span className='label'>{props.label}</span>
