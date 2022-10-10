@@ -18,12 +18,12 @@ DROP FUNCTION IF EXISTS close_to;
 DROP FUNCTION IF EXISTS cardinal_direction;
 DROP FUNCTION IF EXISTS wind_distribution;
 
+DELIMITER //
+
 -- Great circle distance - more than enough for distances of less than 5km with 10m precision
 -- (no need to optimize the SQRT - it is far less expensive than the rest)
 -- (yes, MySQL has native support for geography types
 -- but it is very ill-suited for this application)
-DELIMITER //
-
 CREATE FUNCTION great_circle ( lat0 DECIMAL(9,6), lng0 DECIMAL(9,6), lat1 DECIMAL(9,6), lng1 DECIMAL(9,6) )
 RETURNS DECIMAL(9,6)
 BEGIN
@@ -204,8 +204,6 @@ CREATE VIEW launch_info AS
         AVG(launch_lat) AS lat, AVG(launch_lng) AS lng, SUM(score) AS score, COUNT(*) AS flights
     FROM flight NATURAL JOIN flight_extra WHERE launch_id IS NOT NULL GROUP BY launch_id;
 
--- The floating point comparison is dangerous but it appears to be working
--- (and it is not trivial to remove)
 CREATE VIEW flight_info AS
     SELECT
         flight.id AS id, launch_id, route_id,

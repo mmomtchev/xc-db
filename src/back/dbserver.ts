@@ -128,8 +128,6 @@ app.get('/launch/search/:str', async (req, res) => {
 });
 
 app.get('/launch/:id([0-9]+)', async (req, res) => {
-    // TODO Take care of the floating point comparison
-    // (it appears to work and it is not trivial to remove because the MariaDB's optimizer depends on it)
     const r = await db.poolQuery(
         'SELECT launch_info.*, cardinal_direction(direction) AS cardinal,count(*) AS occurrence' +
             ' FROM launch_info LEFT JOIN wind ON (ROUND(launch_info.lat * 4)/4 = wind.lat AND ROUND(launch_info.lng * 4)/4 = wind.lng)' +
