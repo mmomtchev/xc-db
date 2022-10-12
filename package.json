@@ -11,7 +11,7 @@
         "start": "react-scripts start",
         "test": "echo \"Error: no test specified\" && exit 1",
         "deploy:front": "tar -C build -zcf - `cd build; ls *.png; ls favicon* index*` manifest.json robots.txt static | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -C www -zxvf -'",
-        "deploy:back": "tar -C build -zcf - prod deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'",
+        "deploy:back": "tar -C build -zcf - back deps | mbuffer | ssh xcdb@yastreb.garga.net 'cat - | mbuffer | tar -zxvf -'",
         "deploy": "npm run deploy:back && npm run deploy:front && ssh xcdb@yastreb.garga.net 'systemctl --user restart dbserver.service'",
         "lang:extract": "formatjs extract src/front/*.tsx --out-file lang/en.json --format simple",
         "lang:compile": "formatjs compile --format simple lang/fr.json --ast --out-file src/compiled-lang/fr.json && formatjs compile --format simple lang/en.json --ast --out-file src/compiled-lang/en.json"
@@ -69,6 +69,7 @@
         "@rollup/plugin-commonjs": "^22.0.2",
         "@rollup/plugin-json": "^4.1.0",
         "@rollup/plugin-node-resolve": "^14.1.0",
+        "@rollup/plugin-typescript": "^9.0.1",
         "@stdlib/types": "0.0.14",
         "@testing-library/jest-dom": "^5.16.5",
         "@testing-library/react": "^13.4.0",

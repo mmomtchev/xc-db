@@ -17,9 +17,9 @@ const app = express();
 app.use(cors());
 if (process.env.DEBUG) {
     app.use(
-        responseTime((req, res, time) => {
+        responseTime(((req, res, time) => {
             console.debug(req.method, req.url, time.toFixed(2) + 'ms');
-        })
+        }) as unknown) as (req: Express.Request, res: Express.Response) => void
     );
 }
 
