@@ -1,3 +1,5 @@
+SET collation_connection = 'utf8_general_ci';
+
 DROP VIEW IF EXISTS route_info;
 DROP VIEW IF EXISTS launch_info;
 DROP VIEW IF EXISTS flight_info;
