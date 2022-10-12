@@ -25,11 +25,11 @@ DELIMITER //
 -- (yes, MySQL has native support for geography types
 -- but it is very ill-suited for this application)
 CREATE FUNCTION great_circle ( lat0 DECIMAL(9,6), lng0 DECIMAL(9,6), lat1 DECIMAL(9,6), lng1 DECIMAL(9,6) )
-RETURNS DECIMAL(9,6)
+RETURNS FLOAT
 BEGIN
-    DECLARE lat_d DECIMAL(9,6);
-    DECLARE lng_d DECIMAL(9,6);
-    DECLARE lat_m DECIMAL(9,6);
+    DECLARE lat_d FLOAT;
+    DECLARE lng_d FLOAT;
+    DECLARE lat_m FLOAT;
 
     SET lat_d = RADIANS(lat0) - RADIANS(lat1);
     SET lat_m = (RADIANS(lat0) + RADIANS(lat1)) / 2;
@@ -208,9 +208,10 @@ CREATE VIEW flight_info AS
     SELECT
         flight.id AS id, launch_id, route_id,
         launch_point, landing_point, p1_point, p2_point, p3_point, e1_point, e2_point,
-        launch_lat, launch_lng, p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng,
+        launch_lat, launch_lng, landing_lat, landing_lng,
+        p1_lat, p1_lng, p2_lat, p2_lng, p3_lat, p3_lng, e1_lat, e1_lng, e2_lat, e2_lng,
         type, score, distance, category, glider, pilot_url, flight_url, pilot_name,
-        flight_extra.date, MONTH(flight_extra.date) as month,
+        flight_extra.date, MONTH(flight_extra.date) AS month,
         wind.direction AS wind_direction
     FROM flight NATURAL LEFT JOIN flight_extra 
     LEFT JOIN wind ON (flight_extra.date = wind.date
