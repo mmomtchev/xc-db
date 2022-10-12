@@ -23,37 +23,38 @@ const shared = [
     json()
 ];
 
+const gdal = [
+    native({
+        copyTo: 'build/prod/lib',
+        destDir: './lib'
+    }),
+    copy({
+        targets: [
+            {
+                src: 'node_modules/gdal-async/deps/libgdal/gdal/data',
+                dest: 'build/deps/libgdal/gdal'
+            },
+            {
+                src: 'node_modules/gdal-async/deps/libproj/proj/data',
+                dest: 'build/deps/libproj/proj'
+            }
+        ]
+    })
+];
+
 export default [
-    {
-        input: 'build/back/dbserver.js',
+    ...['dbserver.js', 'wind.js'].map((f) => ({
+        input: `build/back/${f}`,
         output: {
-            file: 'build/prod/dbserver.js',
+            file: `build/prod/${f}`,
             format: 'cjs',
             exports: 'auto',
             compact: true
         },
         external: builtins,
-        plugins: [
-            native({
-                copyTo: 'build/prod/lib',
-                destDir: './lib'
-            }),
-            copy({
-                targets: [
-                    {
-                        src: 'node_modules/gdal-async/deps/libgdal/gdal/data',
-                        dest: 'build/deps/libgdal/gdal'
-                    },
-                    {
-                        src: 'node_modules/gdal-async/deps/libproj/proj/data',
-                        dest: 'build/deps/libproj/proj'
-                    }
-                ]
-            }),
-            ...shared
-        ]
-    },
-    ...['classify.js', 'import.js', 'wind.js', 'launches.js'].map((f) => ({
+        plugins: [...gdal, ...shared]
+    })),
+    ...['classify.js', 'import.js', 'launches.js'].map((f) => ({
         input: `build/back/${f}`,
         output: {
             file: `build/prod/${f}`,
