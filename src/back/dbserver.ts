@@ -278,11 +278,15 @@ app.get('/point/flight/:flight([0-9]+)', async (req, res) => {
             ' FROM flight LEFT JOIN point ON (flight.id = point.flight_id) WHERE flight.id = ?',
         [req.params.flight]
     );
-    const flight_points = segmentFlight(fullPoints, flight, points);
+    const flight_points = [];
+    for (let i = 0; i < points.length; i++) {
+        flight_points[points[i]['id']] = points[i];
+    }
+    const flight_segments = segmentFlight(fullPoints, flight, flight_points);
     const segments = scaleSegments(fullPoints, flight);
 
     for (let i = 0; i < fullPoints.length - 1; i++) {
-        const seg = interpolate(flight_points[i], segments[i].finish - segments[i].start);
+        const seg = interpolate(flight_segments[i], segments[i].finish - segments[i].start);
         await terrainUnderPath(seg);
         segments[i].alt = seg.map((x) => x.alt);
         segments[i].terrain = seg.map((x) => x.terrain);
