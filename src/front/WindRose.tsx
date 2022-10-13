@@ -4,6 +4,7 @@ import {directionsWind} from '../lib/types';
 import {localizedDirections} from './Intl';
 
 const radius = 100;
+const arc = 0.2;
 
 export default function WindRose(props: {className: string; color?: string; wind: number[]}) {
     const ref = React.useRef<HTMLCanvasElement>(null);
@@ -16,7 +17,7 @@ export default function WindRose(props: {className: string; color?: string; wind
         const height = ref.current.height;
         ctx.clearRect(0, 0, ref.current.width, height);
 
-        // Mathematical coordinates to circle coordinates
+        // Mathematical coordinates to image coordinates
         const mapX = (x: number) => x + radius;
         const mapY = (y: number) => radius - y;
 
@@ -24,6 +25,7 @@ export default function WindRose(props: {className: string; color?: string; wind
         ctx.fillStyle = props.color || 'white';
         ctx.lineWidth = 5;
 
+        // The wind
         ctx.beginPath();
         const max = Math.max(...props.wind);
         let first;
@@ -31,15 +33,24 @@ export default function WindRose(props: {className: string; color?: string; wind
             const angle = i * (Math.PI / 4);
             const r = radius * (props.wind[i] / max);
             if (i === 0) {
-                first = {x: mapX(Math.sin(angle) * r), y: mapY(Math.cos(angle) * r)};
+                first = {x: mapX(Math.sin(angle - arc) * r), y: mapY(Math.cos(angle - arc) * r)};
                 ctx.moveTo(first.x, first.y);
             } else {
-                ctx.lineTo(mapX(Math.sin(angle) * r), mapY(Math.cos(angle) * r));
+                ctx.lineTo(mapX(Math.sin(angle - arc) * r), mapY(Math.cos(angle - arc) * r));
             }
+            ctx.lineTo(mapX(Math.sin(angle + arc) * r), mapY(Math.cos(angle + arc) * r));
         }
         ctx.lineTo(first.x, first.y);
+        ctx.closePath();
+        ctx.fill();
+
+        // The external circle
+        ctx.beginPath();
+        ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
         ctx.stroke();
 
+        // The letters
+        ctx.globalCompositeOperation = 'xor';
         for (let i = 0; i < directionsWind.length; i += 2) {
             const angle = i * (Math.PI / 4);
             const x = Math.sin(angle) * radius;
@@ -51,13 +62,11 @@ export default function WindRose(props: {className: string; color?: string; wind
             ctx.fillText(localizedDirections(intl)[directionsWind[i]], mapX(x), mapY(y));
         }
 
+        // The center dot
         ctx.beginPath();
-        ctx.arc(radius, radius, radius, 0, 2 * Math.PI);
+        ctx.arc(radius, radius, 5, 0, 2 * Math.PI);
         ctx.stroke();
-
-        ctx.beginPath();
-        ctx.arc(radius, radius, 1, 0, 2 * Math.PI);
-        ctx.stroke();
+        ctx.globalCompositeOperation = undefined;
     }, [ref, props.wind, props.color, intl]);
 
     return <canvas className={props.className} width={2 * radius} height={2 * radius} ref={ref} />;
