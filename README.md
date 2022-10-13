@@ -125,7 +125,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
 10. Start the backend in development mode
 
-    `node build/back/dbserver.js`
+    `node build/back/dbserver.js` (`ts-node src/back/dbserver.ts` for source-level debugging)
 
 11. Start the frontend in development mode
 
