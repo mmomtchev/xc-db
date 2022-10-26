@@ -99,7 +99,36 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     `node build/back/wind.js wind.grib`
 
-    Otherwise you will have to implement your own converter/importer.
+    Otherwise, edit the extent of the area you are interested in in `config.json`:
+
+    ```json
+    "map": {
+        "extent": [
+            [
+                -5,
+                55
+            ],
+            [
+                10,
+                40
+            ]
+        ]
+    },
+    ```
+
+    This example covers France - left to 5°W, top to 55°N, right to 10°E and south to 40°N.
+
+    Then create an account at the Climate Data Service at Copernicus - https://cds.climate.copernicus.eu/api-how-to and install their API client:
+
+    ```shell
+    pympip3 install cdsapi
+    ```
+
+    Then use the provided downloader by launching:
+
+    ```shell
+    node build/back/download_wind 2021 wind-2021.grib
+    ```
 
 7. Import the names of launch sites
 
