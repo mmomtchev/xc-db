@@ -118,7 +118,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     This example covers France - left to 5°W, top to 55°N, right to 10°E and south to 40°N.
 
-    Then create an account at the Climate Data Service at Copernicus - https://cds.climate.copernicus.eu/api-how-to and install their API client:
+    Then create an account at the Climate Data Store at Copernicus - https://cds.climate.copernicus.eu/api-how-to and install their API client:
 
     ```shell
     pympip3 install cdsapi
