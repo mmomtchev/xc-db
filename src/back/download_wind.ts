@@ -10,7 +10,7 @@ const config = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'config.
 const cds = proxify(pymport('cdsapi'));
 const client = cds.Client();
 
-// Copernicus use TOP,LEFT,BOTTOM,RIGHT
+// Copernicus uses TOP,LEFT,BOTTOM,RIGHT
 // We use LEFT,TOP,RIGHT,BOTTOM
 const extent = [config.map.extent[0][1], config.map.extent[0][0], config.map.extent[1][1], config.map.extent[1][0]];
 
@@ -21,40 +21,8 @@ client.retrieve(
         format: 'grib',
         area: extent,
         time: '13:00',
-        day: [
-            '01',
-            '02',
-            '03',
-            '04',
-            '05',
-            '06',
-            '07',
-            '08',
-            '09',
-            '10',
-            '11',
-            '12',
-            '13',
-            '14',
-            '15',
-            '16',
-            '17',
-            '18',
-            '19',
-            '20',
-            '21',
-            '22',
-            '23',
-            '24',
-            '25',
-            '26',
-            '27',
-            '28',
-            '29',
-            '30',
-            '31'
-        ],
-        month: ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10'],
+        day: Array.from({length: 31}, (_, i) => i + 1),
+        month: Array.from({length: 12}, (_, i) => i + 1),
         year: process.argv[2],
         pressure_level: '600',
         variable: ['u_component_of_wind', 'v_component_of_wind']
