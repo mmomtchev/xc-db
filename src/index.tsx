@@ -22,6 +22,7 @@ const messages = {fr, en};
 
 if (process.env.REACT_APP_XCDB_GA) {
     ReactGA.initialize(process.env.REACT_APP_XCDB_GA);
+    ReactGA.pageview(window.location.pathname + window.location.search);
 }
 
 const router = createBrowserRouter([
