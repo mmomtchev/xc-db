@@ -66,6 +66,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 4. Compile the project
 
     `tsc`
+    `npm run lang:compile`
 
 5. Import the flight tracks
 
