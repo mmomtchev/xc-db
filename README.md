@@ -125,6 +125,8 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
     pympip3 install cdsapi
     ```
 
+    Create your `.cdsapirc` as per the instructions on their site.
+
     Then use the provided downloader by launching:
 
     ```shell
