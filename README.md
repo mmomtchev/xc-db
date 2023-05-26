@@ -16,9 +16,7 @@ In order to install and use this project, besides the source code available here
 
 -   A collection of flight tracks in FAI `.igc` format enriched with sidecar `.json` files containing the metadata (look below for an example)
 -   _(optionally)_ A database of the wind conditions covering the period/area of the flight tracks in GRIB format
-    https://xcdb.velivole.fr/wind.grib covers France from 2012 to 2021
-
-    https://xcdb.velivole.fr/wind2022.grib covers France from 2022/01 to 2022/08
+    https://xcdb.velivole.fr/wind2012.grib to https://xcdb.velivole.fr/wind2023.grib covers France from 2012 to May 20th 2023
 
 -   _(optionally)_ A list of names and coordinates for the possible launch locations in GeoJSON format
     https://data.velivole.fr/data/launch_sites.min.geojson is a good European database
