@@ -365,7 +365,7 @@ app.get('/height', async (req, res) => {
     const lng = +req.query.lng;
     const file = `${lat > 0 ? 'N' : 'S'}${Math.floor(lat).toFixed(0)}${lng > 0 ? 'E' : 'W'}${Math.floor(lng)
         .toFixed(0)
-        .padStart(3, '0')}.hgt`;
+        .padStart(3, '0')}.hgt.zip`;
     const ds = gdal.open(path.resolve(db.config.dbserver.srtm_dir, file));
     const xform = new gdal.CoordinateTransformation(gdal.SpatialReference.fromEPSG(4326), ds);
     const pt = xform.transformPoint(lng, lat);

@@ -21,7 +21,7 @@ export async function terrainUnderPath(track: Point[]) {
 
         const file = `${p.lat > 0 ? 'N' : 'S'}${Math.floor(p.lat).toFixed(0)}${p.lng > 0 ? 'E' : 'W'}${Math.floor(p.lng)
             .toFixed(0)
-            .padStart(3, '0')}.hgt`;
+            .padStart(3, '0')}.hgt.zip`;
         try {
             if (file !== last.file) {
                 ds = await gdal.openAsync(path.resolve(config.dbserver.srtm_dir, file));
