@@ -33,7 +33,7 @@ const shared = [
 
 const gdal = [
     native({
-        copyTo: 'build/prod/lib',
+        copyTo: 'build/back/lib',
         destDir: './lib'
     }),
     copy({
