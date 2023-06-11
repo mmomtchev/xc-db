@@ -26,12 +26,12 @@ function App() {
     return (
         <div className='main'>
             <header className='header bg-dark'>
-                <div className='d-flex flex-row justify-content-around'>
+                <div className='d-flex flex-row justify-content-around align-items-center'>
                     <div className='d-flex flex-row'>
-                        <h1>
+                        <h1 className='m-0 p-0'>
                             XC-DB <sup>alpha</sup>
                         </h1>
-                        <small className='ms-3 m-0 p-0 ms-1 align-self-center'>
+                        <small className='ms-3 m-0 p-0 ms-1'>
                             <p className='m-0'>front: {process.env.REACT_APP_BUILD || 'development'}</p>
                             <p className='m-0'>back: {backVersion}</p>
                         </small>
