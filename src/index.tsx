@@ -6,7 +6,6 @@ import ReactGA from 'react-ga';
 
 import 'bootstrap/dist/css/bootstrap.css';
 import 'bootstrap/dist/js/bootstrap.bundle.js';
-import './index.css';
 
 import App from './front/App';
 import {store, setRouter} from './front/store';

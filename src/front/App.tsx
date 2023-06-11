@@ -31,23 +31,21 @@ function App() {
                         <h1>
                             XC-DB <sup>alpha</sup>
                         </h1>
-                        <div className='m-0 p-0 ms-1 tiny align-self-center'>
+                        <small className='ms-3 m-0 p-0 ms-1 align-self-center'>
                             <p className='m-0'>front: {process.env.REACT_APP_BUILD || 'development'}</p>
                             <p className='m-0'>back: {backVersion}</p>
-                        </div>
+                        </small>
                     </div>
                     <div>
-                        <small>
-                            {intl.formatMessage({defaultMessage: 'a project by', id: 'RXBcq1'})}&nbsp;
-                            <a className='text-light' href='https://www.velivole.fr'>
-                                velivole.fr
-                            </a>
-                        </small>
+                        {intl.formatMessage({defaultMessage: 'a project by', id: 'RXBcq1'})}&nbsp;
+                        <a className='text-light' href='https://www.velivole.fr'>
+                            velivole.fr
+                        </a>
                     </div>
                 </div>
             </header>
             <div className='d-flex flex-row'>
-                <div className='left-menu d-flex flex-column'>
+                <div className='left-menu left-margin d-flex flex-column'>
                     <Settings />
                     <Launch />
                     <RouteList />

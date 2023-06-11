@@ -5,8 +5,20 @@ body,
 
 .header {
     height: 5vh;
-    font-size: calc(10px + 2vmin);
+    font-size: 2.4vh;
     color: white;
+}
+
+.header h1 {
+    font-size: 4vh;
+}
+
+.header small {
+    font-size: 1.75vh;
+}
+
+.hamburger {
+    height: 2rem;
 }
 
 .footer,
@@ -31,7 +43,18 @@ body,
 
 .left-menu {
     height: calc(99vh - 5vh - 10px);
-    width: 400px;
+}
+
+.left-margin {
+    flex: 0 0 250px;
+}
+
+#settings-collapse {
+    position: absolute;
+    top: calc(5vh + 2rem + 10px);
+    left: 5px;
+    z-index: 1000;
+    background-color: white;
 }
 
 .info .label {
