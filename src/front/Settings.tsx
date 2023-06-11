@@ -115,15 +115,15 @@ function ScoreButton(props: {scoreGroup: number}) {
 export default function SettingsGroup() {
     const intl = useIntl();
     return (
-        <div className='m-1 d-flex flex-column justify-content-center'>
+        <div className='m-0 p-0 d-flex flex-column justify-content-center'>
             <div>
-                <button className='btn' data-bs-toggle='collapse' data-bs-target='#settings-collapse'>
+                <button className='btn p-0 m-0 ms-1' data-bs-toggle='collapse' data-bs-target='#settings-collapse'>
                     <img className='hamburger' src={hamburger} />
                 </button>
             </div>
             <div id='settings-collapse' className='collapse'>
-                <div className='d-flex flex-column shadow rounded'>
-                    <div className='btn-group m-1 p-1' role='group'>
+                <div className='d-flex flex-column p-1 shadow rounded'>
+                    <div className='btn-group m-0 p-0' role='group'>
                         <ModeButton
                             label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})}
                             mode='flights'
@@ -132,7 +132,7 @@ export default function SettingsGroup() {
                         <ModeButton label={intl.formatMessage({defaultMessage: 'Average', id: 'FnRTEV'})} mode='avg' />
                     </div>
                     <div className='d-flex flex-row justify-content-around'>
-                        <div className='btn-group m-1 p-1' role='group'>
+                        <div className='btn-group m-0 p-0' role='group'>
                             <table>
                                 <tbody>
                                     <tr>
@@ -177,22 +177,22 @@ export default function SettingsGroup() {
                             </small>
                         </div>
                     </div>
-                    <div className='btn-group m-1 p-1' role='group'>
+                    <div className='btn-group m-0 mb-1 p-0' role='group'>
                         {categoriesGlider.map((c, i) => (
                             <CategoryButton key={i} cat={c} />
                         ))}
                     </div>
-                    <div className='btn-group mt-1 mb-0 px-1 pt-1 pb-0 flex-wrap' role='group'>
+                    <div className='btn-group m-0 mb-1 p-0 flex-wrap' role='group'>
                         {namesMonth.slice(0, 6).map((m, i) => (
                             <MonthButton key={i} month={m} />
                         ))}
                     </div>
-                    <div className='btn-group mt-0 mb-1 px-1 pt-0 pb-1 flex-wrap' role='group'>
+                    <div className='btn-group m-0 mb-1 p-0 flex-wrap' role='group'>
                         {namesMonth.slice(6, 12).map((m, i) => (
                             <MonthButton key={i} month={m} />
                         ))}
                     </div>
-                    <div className='btn-group m-1 p-1' role='group'>
+                    <div className='btn-group m-0 p-0' role='group'>
                         {categoriesScore.map((_, i) => (
                             <ScoreButton key={i} scoreGroup={i} />
                         ))}

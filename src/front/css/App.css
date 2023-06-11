@@ -51,7 +51,7 @@ body,
 
 #settings-collapse {
     position: absolute;
-    top: calc(5vh + 2rem + 10px);
+    top: calc(5vh + 2rem + 2px);
     left: 5px;
     z-index: 1000;
     background-color: white;
