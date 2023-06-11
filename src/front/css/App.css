@@ -1,3 +1,7 @@
+body {
+    height: 100vh;
+}
+
 body,
 .main {
     overflow-y: hidden;
@@ -21,13 +25,17 @@ body,
     height: 2rem;
 }
 
+.footer {
+    overflow-y: hidden;
+}
+
 .footer,
 .footer img {
-    height: 10px
+    height: 10px !important;
 }
 
 .tiny {
-    font-size: 0.75rem;
+    font-size: 8px;
     height: fit-content;
 }
 

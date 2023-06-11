@@ -6,6 +6,8 @@ import {RFeature, RStyle, RContext} from 'rlayers';
 
 import {RouteInfo} from './store';
 
+RFeature.hitTolerance = 10;
+
 export default function MapRoute(props: {route: RouteInfo; highlight?: boolean}) {
     const context = useContext(RContext);
     const pointRes = getPointResolution(context.map!.getView().getProjection(), 1, fromLonLat(props.route.tp[0]));
@@ -14,7 +16,7 @@ export default function MapRoute(props: {route: RouteInfo; highlight?: boolean})
     useEffect(() => {
         if (props.highlight) {
             const routeExtent = boundingExtent(props.route.tp.map((c) => fromLonLat(c)));
-            context.map.getView().fit(routeExtent, {padding: [20, 20, 20, 20], duration: 750});
+            context.map.getView().fit(routeExtent, {padding: [50, 50, 50, 50], duration: 750});
         }
     }, [props.route.tp, props.highlight, context.map]);
 
