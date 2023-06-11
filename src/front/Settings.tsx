@@ -6,6 +6,7 @@ import {localizedDirections, localizedMonths} from './Intl';
 import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../lib/types';
 
 import iconUncleSam from './jpg/uncle_sam.jpg';
+import hamburger from './svg/hamburger.svg';
 
 export function fetchFilters(settings: Settings): string {
     let wind = '';
@@ -114,78 +115,90 @@ function ScoreButton(props: {scoreGroup: number}) {
 export default function SettingsGroup() {
     const intl = useIntl();
     return (
-        <React.Fragment>
-            <div className='btn-group m-1 p-1' role='group'>
-                <ModeButton label={intl.formatMessage({defaultMessage: 'Score', id: 'oLkLww'})} mode='score' />
-                <ModeButton label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})} mode='flights' />
-                <ModeButton label={intl.formatMessage({defaultMessage: 'Average', id: 'FnRTEV'})} mode='avg' />
+        <div className='m-1 d-flex flex-column justify-content-center'>
+            <div>
+                <button className='btn' data-bs-toggle='collapse' data-bs-target='#settings-collapse'>
+                    <img className='hamburger' src={hamburger} />
+                </button>
             </div>
-            <div className='d-flex flex-row justify-content-around'>
-                <div className='btn-group m-1 p-1' role='group'>
-                    <table>
-                        <tbody>
-                            <tr>
-                                <td align='left'>
-                                    <WindButton wind='NW' />
-                                </td>
-                                <td>
-                                    <WindButton wind='N' />
-                                </td>
-                                <td align='right'>
-                                    <WindButton wind='NE' />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align='left'>
-                                    <WindButton wind='W' />
-                                </td>
-                                <td>&#129517;</td>
-                                <td align='right'>
-                                    <WindButton wind='E' />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td align='left'>
-                                    <WindButton wind='SW' />
-                                </td>
-                                <td>
-                                    <WindButton wind='S' />
-                                </td>
-                                <td align='right'>
-                                    <WindButton wind='SE' />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <div id='settings-collapse' className='collapse'>
+                <div className='d-flex flex-column shadow rounded'>
+                    <div className='btn-group m-1 p-1' role='group'>
+                        <ModeButton label={intl.formatMessage({defaultMessage: 'Score', id: 'oLkLww'})} mode='score' />
+                        <ModeButton
+                            label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})}
+                            mode='flights'
+                        />
+                        <ModeButton label={intl.formatMessage({defaultMessage: 'Average', id: 'FnRTEV'})} mode='avg' />
+                    </div>
+                    <div className='d-flex flex-row justify-content-around'>
+                        <div className='btn-group m-1 p-1' role='group'>
+                            <table>
+                                <tbody>
+                                    <tr>
+                                        <td align='left'>
+                                            <WindButton wind='NW' />
+                                        </td>
+                                        <td>
+                                            <WindButton wind='N' />
+                                        </td>
+                                        <td align='right'>
+                                            <WindButton wind='NE' />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align='left'>
+                                            <WindButton wind='W' />
+                                        </td>
+                                        <td>&#129517;</td>
+                                        <td align='right'>
+                                            <WindButton wind='E' />
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align='left'>
+                                            <WindButton wind='SW' />
+                                        </td>
+                                        <td>
+                                            <WindButton wind='S' />
+                                        </td>
+                                        <td align='right'>
+                                            <WindButton wind='SE' />
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className='d-flex flex-column align-items-center'>
+                            <img height='80px' width='60px' src={iconUncleSam} />
+                            <small>
+                                <strong>{intl.formatMessage({defaultMessage: 'YOU?', id: 'bVgjEz'})}</strong>&nbsp;
+                                {intl.formatMessage({defaultMessage: 'Are you a sponsor?', id: 'A8mNJ7'})}
+                            </small>
+                        </div>
+                    </div>
+                    <div className='btn-group m-1 p-1' role='group'>
+                        {categoriesGlider.map((c, i) => (
+                            <CategoryButton key={i} cat={c} />
+                        ))}
+                    </div>
+                    <div className='btn-group mt-1 mb-0 px-1 pt-1 pb-0 flex-wrap' role='group'>
+                        {namesMonth.slice(0, 6).map((m, i) => (
+                            <MonthButton key={i} month={m} />
+                        ))}
+                    </div>
+                    <div className='btn-group mt-0 mb-1 px-1 pt-0 pb-1 flex-wrap' role='group'>
+                        {namesMonth.slice(6, 12).map((m, i) => (
+                            <MonthButton key={i} month={m} />
+                        ))}
+                    </div>
+                    <div className='btn-group m-1 p-1' role='group'>
+                        {categoriesScore.map((_, i) => (
+                            <ScoreButton key={i} scoreGroup={i} />
+                        ))}
+                    </div>
                 </div>
-                <div className='d-flex flex-column align-items-center'>
-                    <img height='80px' width='60px' src={iconUncleSam} />
-                    <small>
-                        <strong>{intl.formatMessage({defaultMessage: 'YOU?', id: 'bVgjEz'})}</strong>&nbsp;
-                        {intl.formatMessage({defaultMessage: 'Are you a sponsor?', id: 'A8mNJ7'})}
-                    </small>
-                </div>
             </div>
-            <div className='btn-group m-1 p-1' role='group'>
-                {categoriesGlider.map((c, i) => (
-                    <CategoryButton key={i} cat={c} />
-                ))}
-            </div>
-            <div className='btn-group mt-1 mb-0 px-1 pt-1 pb-0 flex-wrap' role='group'>
-                {namesMonth.slice(0, 6).map((m, i) => (
-                    <MonthButton key={i} month={m} />
-                ))}
-            </div>
-            <div className='btn-group mt-0 mb-1 px-1 pt-0 pb-1 flex-wrap' role='group'>
-                {namesMonth.slice(6, 12).map((m, i) => (
-                    <MonthButton key={i} month={m} />
-                ))}
-            </div>
-            <div className='btn-group m-1 p-1' role='group'>
-                {categoriesScore.map((_, i) => (
-                    <ScoreButton key={i} scoreGroup={i} />
-                ))}
-            </div>
-        </React.Fragment>
+        </div>
     );
 }
