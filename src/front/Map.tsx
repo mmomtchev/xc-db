@@ -104,7 +104,6 @@ export function Map() {
                 v = getValue(settings.mode, feature);
                 selected = feature.get('id') == launchId;
             }
-            console.log({launchId, selected});
             if (selected) {
                 return <RStyle.RIcon src={iconLaunchActive} scale={iconSizes[getSizeClass(settings.mode, v)]} />;
             }
