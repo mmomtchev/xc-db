@@ -126,6 +126,7 @@ export const flightData = createSlice({
         route: null as RouteInfo,
         routeUnrolled: false,
         flights: [] as FlightInfo[],
+        flightsUnrolled: false,
         profile: [] as FlightSegment[]
     },
     reducers: {
@@ -153,6 +154,12 @@ export const flightData = createSlice({
         },
         unrollRoute: (state) => {
             state.routeUnrolled = true;
+        },
+        rollFlights: (state) => {
+            state.flightsUnrolled = false;
+        },
+        unrollFlights: (state) => {
+            state.flightsUnrolled = true;
         },
         loadFlights: (state, action: PayloadAction<FlightInfo[]>) => {
             state.flights = action.payload;

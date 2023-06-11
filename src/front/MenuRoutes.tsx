@@ -63,11 +63,15 @@ export function Route(props: {route: RouteInfo}) {
     const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
     const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
     const route = useSelector((state) => state.flightData.route);
+    const flightsUnrolled = useSelector((state) => state.flightData.flightsUnrolled);
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const intl = useIntl();
 
     const ref = React.useRef<HTMLDivElement>(null);
+
+    const onClickRoll = React.useCallback(() => dispatch(flightData.actions.rollFlights()), [dispatch]);
+    const onClickUnroll = React.useCallback(() => dispatch(flightData.actions.unrollFlights()), [dispatch]);
 
     React.useEffect(() => {
         if (routeId !== null && routeId === props.route.id && routeId !== route?.id)
@@ -112,7 +116,22 @@ export function Route(props: {route: RouteInfo}) {
                     <WindRose className='wind-rose' color='black' wind={props.route.wind} />
                 </Info>
             )}
-            {routeId !== null && routeId === props.route.id && <FlightList />}
+            {flightsUnrolled ? (
+                <>
+                    <div className='align-self-center mb-2'>
+                        <button className='btn btn-primary' onClick={onClickRoll}>
+                            {intl.formatMessage({defaultMessage: 'Hide flights', id: 'U/1MQI'})}
+                        </button>
+                    </div>
+                    {routeId !== null && routeId === props.route.id && <FlightList />}
+                </>
+            ) : (
+                <div className='align-self-center'>
+                    <button className='btn btn-primary' onClick={onClickUnroll}>
+                        {intl.formatMessage({defaultMessage: 'Unroll flights', id: 'sB2LtZ'})}
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
