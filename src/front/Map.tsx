@@ -1,5 +1,5 @@
 import React from 'react';
-import {useNavigate} from 'react-router-dom';
+import {useMatch, useNavigate} from 'react-router-dom';
 import {fromLonLat} from 'ol/proj';
 import {Feature} from 'ol';
 import GeoJSON from 'ol/format/GeoJSON';
@@ -20,13 +20,14 @@ import {RLayers} from 'rlayers/control';
 
 import config from '../config.json';
 import iconLaunch from './svg/icon-paraglide.svg';
+import iconLaunchActive from './svg/icon-paraglide-active.svg';
 
 import 'ol/ol.css';
 import {useSelector, Settings, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 import {fetchFilters} from './Settings';
-import {Circle, Fill, Stroke, Style} from 'ol/style';
+import {Circle, Fill, Style} from 'ol/style';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const geojson = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -78,6 +79,7 @@ export function Map() {
     const routes = useSelector((state) => state.flightData.routesList);
     const route = useSelector((state) => state.flightData.route);
     const segments = useSelector((state) => state.flightData.profile);
+    const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
 
     const navigate = useNavigate();
     const click = React.useCallback(
@@ -92,16 +94,23 @@ export function Map() {
     const style = React.useCallback(
         (feature, _) => {
             let v = 0;
+            let selected = false;
             if (feature.get('features')) {
                 v = feature
                     .get('features')
                     .reduce((a, x) => (getValue(settings.mode, x) > a ? getValue(settings.mode, x) : a), 0);
+                selected = feature.get('features').reduce((a, x) => a || x.get('id') == launchId, false);
             } else {
                 v = getValue(settings.mode, feature);
+                selected = feature.get('id') == launchId;
+            }
+            console.log({launchId, selected});
+            if (selected) {
+                return <RStyle.RIcon src={iconLaunchActive} scale={iconSizes[getSizeClass(settings.mode, v)]} />;
             }
             return <RStyle.RIcon src={iconLaunch} scale={iconSizes[getSizeClass(settings.mode, v)]} />;
         },
-        [settings.mode]
+        [settings.mode, launchId]
     );
 
     return (
