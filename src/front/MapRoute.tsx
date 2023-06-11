@@ -11,13 +11,12 @@ export default function MapRoute(props: {route: RouteInfo; highlight?: boolean})
     const pointRes = getPointResolution(context.map!.getView().getProjection(), 1, fromLonLat(props.route.tp[0]));
     const radius = Math.max(3000, props.route.avgDistance * 0.05 * 1000) / pointRes;
 
-    console.log(props);
     useEffect(() => {
         if (props.highlight) {
             const routeExtent = boundingExtent(props.route.tp.map((c) => fromLonLat(c)));
             context.map.getView().fit(routeExtent, {padding: [20, 20, 20, 20], duration: 750});
         }
-    }, [props.route.id, props.highlight]);
+    }, [props.route.tp, props.highlight, context.map]);
 
     return (
         <React.Fragment>
