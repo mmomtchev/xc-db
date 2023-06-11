@@ -124,11 +124,11 @@ export default function SettingsGroup() {
             <div id='settings-collapse' className='collapse'>
                 <div className='d-flex flex-column shadow rounded'>
                     <div className='btn-group m-1 p-1' role='group'>
-                        <ModeButton label={intl.formatMessage({defaultMessage: 'Score', id: 'oLkLww'})} mode='score' />
                         <ModeButton
                             label={intl.formatMessage({defaultMessage: 'Flights', id: 'g0CIY6'})}
                             mode='flights'
                         />
+                        <ModeButton label={intl.formatMessage({defaultMessage: 'Score', id: 'oLkLww'})} mode='score' />
                         <ModeButton label={intl.formatMessage({defaultMessage: 'Average', id: 'FnRTEV'})} mode='avg' />
                     </div>
                     <div className='d-flex flex-row justify-content-around'>
