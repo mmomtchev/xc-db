@@ -37,7 +37,7 @@ function filters(req: Request, table?: string): string {
                                 `(${selector}wind_direction + 22.5) % 360 BETWEEN ${+wind * 45} AND ${(+wind + 1) * 45}`
                             );
                     }
-                    clauses.push(`( ${windClauses.join(' OR ')} )`);
+                    if (windClauses.length) clauses.push(`( ${windClauses.join(' OR ')} )`);
                 }
                 break;
             case 'score':
