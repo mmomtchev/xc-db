@@ -8,6 +8,12 @@ import {debug} from '../lib/debug';
 import {fetchFilters} from './Settings';
 import WindRose from './WindRose';
 
+function largeNumber(value: number) {
+    if (value > 1e6) return (value / 1e6).toFixed(2) + 'M';
+    if (value > 1e3) return (value / 1e3).toFixed(2) + 'K';
+    return value.toFixed(2);
+}
+
 export function Launch() {
     const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
     const launch = useSelector((state) => state.flightData.launch);
@@ -56,7 +62,7 @@ export function Launch() {
             />
             <Info
                 label={intl.formatMessage({defaultMessage: 'Total score', id: 'me6E3h'})}
-                text={launch.score.toFixed(2)}
+                text={largeNumber(launch.score)}
             />
             <Info
                 label={intl.formatMessage({defaultMessage: 'Average score', id: '/0WDGe'})}
