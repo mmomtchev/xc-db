@@ -79,7 +79,7 @@ export function FlightList() {
                 classNames='animated-list'
                 unmountOnExit
                 onExited={React.useCallback(() => {
-                    dispatch(flightData.actions.clearRoute());
+                    if (!routeUnrolled) dispatch(flightData.actions.clearRoute());
                 }, [dispatch])}
             >
                 <div ref={flightsRef} className='infobox flight-list'>
