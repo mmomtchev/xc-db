@@ -39,7 +39,7 @@ function ModeButton(props: {label: string; mode: Settings['mode']}) {
     return (
         <button
             type='button'
-            className={`btn btn-primary ${mode === props.mode ? 'active' : ''}`}
+            className={`btn btn-dark ${mode === props.mode ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setMode(props.mode))}
         >
             {props.label}
@@ -54,7 +54,7 @@ function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
     return (
         <button
             type='button'
-            className={`btn btn-primary ${setting ? 'active' : ''}`}
+            className={`btn btn-dark ${setting ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setCategory({cat: props.cat, val: !setting}))}
         >
             {props.cat}
@@ -62,18 +62,27 @@ function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
     );
 }
 
-function WindButton(props: {wind: typeof directionsWind[number]}) {
+function WindButton(props: {wind: typeof directionsWind[number] | 'I'}) {
     const setting = useSelector((state) => state.settings.wind[props.wind]);
     const dispatch = useDispatch();
     const intl = useIntl();
 
+    const wind = props.wind;
+    const onClick = React.useCallback(
+        wind === 'I'
+            ? () => void dispatch(settingsSlice.actions.invertWind())
+            : () => void dispatch(settingsSlice.actions.setWind({wind, val: !setting})),
+        [wind, dispatch, setting]
+    );
+
     return (
         <button
             type='button'
-            className={`badge btn btn-primary ${setting ? 'active' : ''}`}
-            onClick={() => dispatch(settingsSlice.actions.setWind({wind: props.wind, val: !setting}))}
+            className={`badge btn btn-dark ${setting ? 'active' : ''}`}
+            onClick={onClick}
+            data-bs-theme='dark'
         >
-            {localizedDirections(intl)[props.wind]}
+            {localizedDirections(intl)[props.wind] || 'o'}
         </button>
     );
 }
@@ -86,7 +95,7 @@ function MonthButton(props: {month: typeof namesMonth[number]}) {
     return (
         <button
             type='button'
-            className={`badge btn btn-primary ${setting ? 'active' : ''}`}
+            className={`badge btn btn-dark ${setting ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setMonth({month: props.month, val: !setting}))}
         >
             {localizedMonths(intl)[props.month]}
@@ -102,7 +111,7 @@ function ScoreButton(props: {scoreGroup: number}) {
     return (
         <button
             type='button'
-            className={`badge btn btn-primary ${setting ? 'active' : ''}`}
+            className={`badge btn btn-dark ${setting ? 'active' : ''}`}
             onClick={() => dispatch(settingsSlice.actions.setScoreGroup({group: props.scoreGroup, val: !setting}))}
         >
             {group.from && group.to && `${group.from}-${group.to}`}
@@ -150,7 +159,9 @@ export default function SettingsGroup() {
                                         <td align='left'>
                                             <WindButton wind='W' />
                                         </td>
-                                        <td>&#129517;</td>
+                                        <td>
+                                            <WindButton wind='I' />
+                                        </td>
                                         <td align='right'>
                                             <WindButton wind='E' />
                                         </td>

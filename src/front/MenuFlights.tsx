@@ -60,14 +60,14 @@ export function FlightList() {
             {flightsUnrolled ? (
                 <>
                     <div className='align-self-center mb-2'>
-                        <button className='btn btn-primary' onClick={onClickRoll}>
+                        <button className='btn btn-dark' onClick={onClickRoll}>
                             {intl.formatMessage({defaultMessage: 'Hide flights', id: 'U/1MQI'})}
                         </button>
                     </div>
                 </>
             ) : (
                 <div className='align-self-center'>
-                    <button className='btn btn-primary' onClick={onClickUnroll}>
+                    <button className='btn btn-dark' onClick={onClickUnroll}>
                         {intl.formatMessage({defaultMessage: 'Unroll flights', id: 'sB2LtZ'})}
                     </button>
                 </div>

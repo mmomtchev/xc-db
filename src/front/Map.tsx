@@ -19,6 +19,7 @@ import {
 import {RLayers} from 'rlayers/control';
 
 import config from '../config.json';
+import pacman from './svg/pacman.svg';
 import iconLaunch from './svg/icon-paraglide.svg';
 import iconLaunchActive from './svg/icon-paraglide-active.svg';
 
@@ -80,6 +81,7 @@ export function Map() {
     const route = useSelector((state) => state.flightData.route);
     const segments = useSelector((state) => state.flightData.profile);
     const launchId = parseInt(useMatch('/launch/:launch/*')?.params?.launch || '') || null;
+    const [mapSpinner, setMapSpinner] = React.useState(true);
 
     const navigate = useNavigate();
     const click = React.useCallback(
@@ -112,73 +114,84 @@ export function Map() {
         [settings.mode, launchId]
     );
 
+    const featuresUrl = `${serverUrl}/geojson/launch/list?${fetchFilters(settings)}`;
+    React.useEffect(() => setMapSpinner(true), [featuresUrl]);
+
     return (
-        <RMap className='map' initial={{center: Forclaz, zoom: 7}} extent={extent}>
-            <RLayers element={layersButton}>
-                <ROSM properties={{label: 'OSM'}} />
-                <RLayerTile
-                    properties={{label: 'OpenTopo'}}
-                    url='https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
-                    attributions='Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)'
-                />
-            </RLayers>
-            <RLayerCluster
-                zIndex={20}
-                format={geojson}
-                url={`${serverUrl}/geojson/launch/list?${fetchFilters(settings)}`}
-                onClick={click}
-                onPointerEnter={cursorPointer}
-                onPointerLeave={cursorDefault}
-                distance={50}
-            >
-                <RStyle.RStyle render={style} />
-            </RLayerCluster>
-            <RLayerVectorImage zIndex={10}>
-                <RStyle.RStyle>
-                    <RStyle.RStroke color='#0000FF40' width={1} />
-                </RStyle.RStyle>
-                {React.useMemo(
-                    () => (route && route.id ? null : routes.map((r, i) => <MapRoute key={i} route={r} />)),
-                    [routes, route]
-                )}
-            </RLayerVectorImage>
-            {route ? (
-                <RLayerVector zIndex={30}>
+        <>
+            <img
+                className='map position-fixed align-self-center'
+                style={{zIndex: 5000, display: mapSpinner ? 'initial' : 'none'}}
+                src={pacman}
+            ></img>
+            <RMap className='map' initial={{center: Forclaz, zoom: 7}} extent={extent}>
+                <RLayers element={layersButton}>
+                    <ROSM properties={{label: 'OSM'}} />
+                    <RLayerTile
+                        properties={{label: 'OpenTopo'}}
+                        url='https://{a-c}.tile.opentopomap.org/{z}/{x}/{y}.png'
+                        attributions='Kartendaten: © OpenStreetMap-Mitwirkende, SRTM | Kartendarstellung: © OpenTopoMap (CC-BY-SA)'
+                    />
+                </RLayers>
+                <RLayerCluster
+                    zIndex={20}
+                    format={geojson}
+                    url={featuresUrl}
+                    onClick={click}
+                    onPointerEnter={cursorPointer}
+                    onPointerLeave={cursorDefault}
+                    onFeaturesLoadEnd={() => void setMapSpinner(false)}
+                    distance={50}
+                >
+                    <RStyle.RStyle render={style} />
+                </RLayerCluster>
+                <RLayerVectorImage zIndex={10}>
                     <RStyle.RStyle>
-                        <RStyle.RStroke color='red' width={3} />
+                        <RStyle.RStroke color='#0000FF40' width={1} />
                     </RStyle.RStyle>
-                    <MapRoute route={route} highlight={true} />
+                    {React.useMemo(
+                        () => (route && route.id ? null : routes.map((r, i) => <MapRoute key={i} route={r} />)),
+                        [routes, route]
+                    )}
+                </RLayerVectorImage>
+                {route ? (
+                    <RLayerVector zIndex={30}>
+                        <RStyle.RStyle>
+                            <RStyle.RStroke color='red' width={3} />
+                        </RStyle.RStyle>
+                        <MapRoute route={route} highlight={true} />
+                    </RLayerVector>
+                ) : null}
+                <RLayerVector zIndex={50}>
+                    <RStyle.RStyle>
+                        <RStyle.RStroke color='cornflowerblue' width={3} />
+                    </RStyle.RStyle>
+                    {React.useMemo(() => (segments.length > 0 ? <MapTrack /> : <React.Fragment />), [segments])}
                 </RLayerVector>
-            ) : null}
-            <RLayerVector zIndex={50}>
-                <RStyle.RStyle>
-                    <RStyle.RStroke color='cornflowerblue' width={3} />
-                </RStyle.RStyle>
-                {React.useMemo(() => (segments.length > 0 ? <MapTrack /> : <React.Fragment />), [segments])}
-            </RLayerVector>
-            {route && route.id ? (
-                <RLayerVectorTile
-                    format={mvt}
-                    opacity={0.5}
-                    url={`${serverUrl}/mvt/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
-                    style={(feature) => {
-                        const density = Math.round(+feature.getProperties().d / 1.5 + 63);
-                        if (!density) return skyLinesStyles[0];
-                        if (!skyLinesStyles[density]) {
-                            const color = `${density.toString(16).padStart(2, '0')}`;
-                            skyLinesStyles[density] = new Style({
-                                image: new Circle({
-                                    radius: 5,
-                                    fill: new Fill({color: `#0000${color}${color}`})
-                                }),
-                                zIndex: 10
-                            });
-                        }
-                        return skyLinesStyles[density];
-                    }}
-                />
-            ) : null}
-        </RMap>
+                {route && route.id ? (
+                    <RLayerVectorTile
+                        format={mvt}
+                        opacity={0.5}
+                        url={`${serverUrl}/mvt/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
+                        style={(feature) => {
+                            const density = Math.round(+feature.getProperties().d / 1.5 + 63);
+                            if (!density) return skyLinesStyles[0];
+                            if (!skyLinesStyles[density]) {
+                                const color = `${density.toString(16).padStart(2, '0')}`;
+                                skyLinesStyles[density] = new Style({
+                                    image: new Circle({
+                                        radius: 5,
+                                        fill: new Fill({color: `#0000${color}${color}`})
+                                    }),
+                                    zIndex: 10
+                                });
+                            }
+                            return skyLinesStyles[density];
+                        }}
+                    />
+                ) : null}
+            </RMap>
+        </>
     );
 }
 

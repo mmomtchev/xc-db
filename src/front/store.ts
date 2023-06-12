@@ -121,6 +121,7 @@ export function setRouter(r: Router) {
 export const flightData = createSlice({
     name: 'flightData',
     initialState: {
+        mapSpinner: true,
         launch: null as LaunchInfo,
         routesList: [] as RouteInfo[],
         route: null as RouteInfo,
@@ -176,7 +177,9 @@ export const flightData = createSlice({
             if (state.route?.id) router.navigate(`/launch/${state.launch.id}/route/${state.route.id}`);
             else if (state.launch?.id) router.navigate(`/launch/${state.launch.id}`);
             else router.navigate('/');
-        }
+        },
+        showMapSpinner: (state) => void (state.mapSpinner = true),
+        hideMapSpinner: (state) => void (state.mapSpinner = false)
     }
 });
 
@@ -246,7 +249,12 @@ export const settingsSlice = createSlice({
             if (window.localStorage) localStorage.setItem('category', JSON.stringify(state.category));
         },
         setWind: (state, action: PayloadAction<{wind: typeof directionsWind[number]; val: boolean}>) => {
+            console.log('setWind', action, state.wind);
             state.wind[action.payload.wind] = action.payload.val;
+            if (window.localStorage) localStorage.setItem('wind', JSON.stringify(state.wind));
+        },
+        invertWind: (state) => {
+            for (const d of Object.keys(state.wind)) state.wind[d] = !state.wind[d];
             if (window.localStorage) localStorage.setItem('wind', JSON.stringify(state.wind));
         },
         setScoreGroup: (state, action: PayloadAction<{group: number; val: boolean}>) => {
