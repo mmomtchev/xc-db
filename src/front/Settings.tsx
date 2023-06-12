@@ -7,6 +7,7 @@ import {categoriesGlider, categoriesScore, directionsWind, namesMonth} from '../
 
 import iconUncleSam from './jpg/uncle_sam.jpg';
 import hamburger from './svg/hamburger.svg';
+import pin from './svg/pin.svg';
 
 export function fetchFilters(settings: Settings): string {
     let wind = '';
@@ -123,14 +124,20 @@ function ScoreButton(props: {scoreGroup: number}) {
 
 export default function SettingsGroup() {
     const intl = useIntl();
+    const [pinEnabled, setPin] = React.useState(false);
+    const pinClick = React.useCallback(() => void setPin(!pinEnabled), [pinEnabled]);
+
     return (
         <div className='m-0 p-0 d-flex flex-column justify-content-center'>
             <div>
                 <button className='btn p-0 m-0 ms-1' data-bs-toggle='collapse' data-bs-target='#settings-collapse'>
                     <img className='hamburger' src={hamburger} />
                 </button>
+                <button className='btn p-0 m-0 ms-1'>
+                    <img className='hamburger' src={pin} onClick={pinClick} />
+                </button>
             </div>
-            <div id='settings-collapse' className='collapse'>
+            <div id='settings-collapse' className={pinEnabled ? '' : 'settings-collapse collapse'}>
                 <div className='d-flex flex-column p-1 shadow rounded'>
                     <div className='btn-group m-0 p-0' role='group'>
                         <ModeButton

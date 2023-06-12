@@ -57,7 +57,7 @@ body,
     flex: 0 0 275px;
 }
 
-#settings-collapse {
+.settings-collapse {
     position: absolute;
     top: calc(5vh + 2rem + 2px);
     left: 5px;
