@@ -57,6 +57,17 @@ body,
     flex: 0 0 275px;
 }
 
+.wind-buttons {
+    display: table-cell;
+    padding: 0;
+    border-spacing: 0;
+    line-height: 0;
+}
+
+.wind-buttons button {
+    height: 30px;
+}
+
 .settings-collapse {
     position: absolute;
     top: calc(5vh + 2rem + 2px);

@@ -79,7 +79,7 @@ function WindButton(props: {wind: typeof directionsWind[number] | 'I'}) {
     return (
         <button
             type='button'
-            className={`badge btn btn-dark ${setting ? 'active' : ''}`}
+            className={`badge btn btn-dark ${setting ? 'active' : ''} w-100`}
             onClick={onClick}
             data-bs-theme='dark'
         >
@@ -149,38 +149,38 @@ export default function SettingsGroup() {
                     </div>
                     <div className='d-flex flex-row justify-content-around'>
                         <div className='btn-group m-0 p-0' role='group'>
-                            <table>
+                            <table className='wind-buttons m-1'>
                                 <tbody>
                                     <tr>
-                                        <td align='left'>
+                                        <td className='p-0' align='left'>
                                             <WindButton wind='NW' />
                                         </td>
-                                        <td>
+                                        <td className='p-0'>
                                             <WindButton wind='N' />
                                         </td>
-                                        <td align='right'>
+                                        <td className='p-0' align='right'>
                                             <WindButton wind='NE' />
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td align='left'>
+                                        <td className='p-0' align='left'>
                                             <WindButton wind='W' />
                                         </td>
-                                        <td>
+                                        <td className='p-0'>
                                             <WindButton wind='I' />
                                         </td>
-                                        <td align='right'>
+                                        <td className='p-0' align='right'>
                                             <WindButton wind='E' />
                                         </td>
                                     </tr>
                                     <tr>
-                                        <td align='left'>
+                                        <td className='p-0' align='left'>
                                             <WindButton wind='SW' />
                                         </td>
-                                        <td>
+                                        <td className='p-0'>
                                             <WindButton wind='S' />
                                         </td>
-                                        <td align='right'>
+                                        <td className='p-0' align='right'>
                                             <WindButton wind='SE' />
                                         </td>
                                     </tr>
