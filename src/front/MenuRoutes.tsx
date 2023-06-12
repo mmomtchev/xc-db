@@ -116,21 +116,25 @@ export function Route(props: {route: RouteInfo}) {
                     <WindRose className='wind-rose' color='black' wind={props.route.wind} />
                 </Info>
             )}
-            {flightsUnrolled ? (
+            {routeId !== null && routeId === props.route.id && (
                 <>
-                    <div className='align-self-center mb-2'>
-                        <button className='btn btn-primary' onClick={onClickRoll}>
-                            {intl.formatMessage({defaultMessage: 'Hide flights', id: 'U/1MQI'})}
-                        </button>
-                    </div>
-                    {routeId !== null && routeId === props.route.id && <FlightList />}
+                    {flightsUnrolled ? (
+                        <>
+                            <div className='align-self-center mb-2'>
+                                <button className='btn btn-primary' onClick={onClickRoll}>
+                                    {intl.formatMessage({defaultMessage: 'Hide flights', id: 'U/1MQI'})}
+                                </button>
+                            </div>
+                            <FlightList />
+                        </>
+                    ) : (
+                        <div className='align-self-center'>
+                            <button className='btn btn-primary' onClick={onClickUnroll}>
+                                {intl.formatMessage({defaultMessage: 'Unroll flights', id: 'sB2LtZ'})}
+                            </button>
+                        </div>
+                    )}
                 </>
-            ) : (
-                <div className='align-self-center'>
-                    <button className='btn btn-primary' onClick={onClickUnroll}>
-                        {intl.formatMessage({defaultMessage: 'Unroll flights', id: 'sB2LtZ'})}
-                    </button>
-                </div>
             )}
         </div>
     );
