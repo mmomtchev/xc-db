@@ -1,4 +1,4 @@
-import React, {LegacyRef, useCallback} from 'react';
+import React, {useCallback} from 'react';
 import {useMatch, useNavigate} from 'react-router-dom';
 import {useIntl} from 'react-intl';
 import {windSVG} from '../lib/wind-svg';
@@ -80,7 +80,7 @@ export function FlightList() {
                 unmountOnExit
                 onExited={React.useCallback(() => {
                     if (!routeUnrolled) dispatch(flightData.actions.clearRoute());
-                }, [dispatch])}
+                }, [dispatch, routeUnrolled])}
             >
                 <div ref={flightsRef} className='infobox flight-list'>
                     {React.useMemo(() => flights.map((f, i) => <Flight key={i} flight={f} />), [flights])}
