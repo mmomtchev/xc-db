@@ -159,6 +159,7 @@ export function Map() {
             {route && route.id ? (
                 <RLayerVectorTile
                     format={mvt}
+                    opacity={0.5}
                     url={`${serverUrl}/mvt/point/route/${route.id}/{z}/{y}/{x}/?${fetchFilters(settings)}`}
                     style={(feature) => {
                         const density = Math.round(+feature.getProperties().d / 1.5 + 63);
