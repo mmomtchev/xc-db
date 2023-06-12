@@ -16,9 +16,27 @@ export function FlightList() {
     const routeId = parseInt(useMatch('/launch/:launch/route/:route/*')?.params?.route || '') || null;
 
     const settings = useSelector((state) => state.settings);
-    const unrolled = useSelector((state) => state.flightData.routeUnrolled);
+    const routeUnrolled = useSelector((state) => state.flightData.routeUnrolled);
     const dispatch = useDispatch();
     const flightsRef = React.useRef<HTMLDivElement>(null);
+    const flightsUnrolled = useSelector((state) => state.flightData.flightsUnrolled);
+    const intl = useIntl();
+
+    const show = React.useMemo(() => routeUnrolled && flightsUnrolled, [routeUnrolled, flightsUnrolled]);
+    const onClickRoll = React.useCallback(
+        (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            e.stopPropagation();
+            dispatch(flightData.actions.rollFlights());
+        },
+        [dispatch]
+    );
+    const onClickUnroll = React.useCallback(
+        (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+            e.stopPropagation();
+            dispatch(flightData.actions.unrollFlights());
+        },
+        [dispatch]
+    );
 
     React.useEffect(() => {
         if (!routeId) return;
@@ -38,20 +56,37 @@ export function FlightList() {
     }, [routeId, launchId, settings, dispatch]);
 
     return (
-        <CSSTransition
-            nodeRef={flightsRef}
-            in={unrolled}
-            timeout={300}
-            classNames='animated-list'
-            unmountOnExit
-            onExited={React.useCallback(() => {
-                dispatch(flightData.actions.clearRoute());
-            }, [dispatch])}
-        >
-            <div ref={flightsRef} className='infobox flight-list'>
-                {React.useMemo(() => flights.map((f, i) => <Flight key={i} flight={f} />), [flights])}
-            </div>
-        </CSSTransition>
+        <>
+            {flightsUnrolled ? (
+                <>
+                    <div className='align-self-center mb-2'>
+                        <button className='btn btn-primary' onClick={onClickRoll}>
+                            {intl.formatMessage({defaultMessage: 'Hide flights', id: 'U/1MQI'})}
+                        </button>
+                    </div>
+                </>
+            ) : (
+                <div className='align-self-center'>
+                    <button className='btn btn-primary' onClick={onClickUnroll}>
+                        {intl.formatMessage({defaultMessage: 'Unroll flights', id: 'sB2LtZ'})}
+                    </button>
+                </div>
+            )}
+            <CSSTransition
+                nodeRef={flightsRef}
+                in={show}
+                timeout={300}
+                classNames='animated-list'
+                unmountOnExit
+                onExited={React.useCallback(() => {
+                    dispatch(flightData.actions.clearRoute());
+                }, [dispatch])}
+            >
+                <div ref={flightsRef} className='infobox flight-list'>
+                    {React.useMemo(() => flights.map((f, i) => <Flight key={i} flight={f} />), [flights])}
+                </div>
+            </CSSTransition>
+        </>
     );
 }
 
