@@ -249,7 +249,6 @@ export const settingsSlice = createSlice({
             if (window.localStorage) localStorage.setItem('category', JSON.stringify(state.category));
         },
         setWind: (state, action: PayloadAction<{wind: typeof directionsWind[number]; val: boolean}>) => {
-            console.log('setWind', action, state.wind);
             state.wind[action.payload.wind] = action.payload.val;
             if (window.localStorage) localStorage.setItem('wind', JSON.stringify(state.wind));
         },
