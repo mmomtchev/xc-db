@@ -12,6 +12,7 @@ import {scrollIntoViewIfNeeded} from './lib';
 import {debug} from '../lib/debug';
 
 import pacman from './svg/pacman.svg';
+import {Location} from './Location';
 
 export function RouteList() {
     const routesRef = React.useRef(null);
@@ -93,6 +94,11 @@ export function Route(props: {route: RouteInfo}) {
                 }
             }, [props.route, routeId, launchId, navigate, dispatch])}
         >
+            <div className='border rounded p-1 mb-2'>
+                <Location lon={props.route.tp[0][0]} lat={props.route.tp[0][1]} />
+                <Location lon={props.route.tp[1][0]} lat={props.route.tp[1][1]} />
+                <Location lon={props.route.tp[2][0]} lat={props.route.tp[2][1]} />
+            </div>
             <Info
                 label={intl.formatMessage({defaultMessage: 'Max score', id: 'ojsSBF'})}
                 text={props.route.maxScore.toFixed(2)}

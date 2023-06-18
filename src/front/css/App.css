@@ -109,6 +109,10 @@ body,
     height: 50px;
 }
 
+.inline-icon {
+    height: 1rem;
+}
+
 .ol-layers-control {
     right: 8px;
     top: 8px;
