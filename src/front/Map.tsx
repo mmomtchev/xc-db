@@ -28,7 +28,7 @@ import {useSelector, Settings, serverUrl} from './store';
 import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 import {fetchFilters} from './Settings';
-import {Circle, Fill, Style} from 'ol/style';
+import {Circle, Fill, Icon, Style} from 'ol/style';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const geojson = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -74,6 +74,29 @@ function cursorDefault(ev) {
 const layersButton = <button>&#9776;</button>;
 
 const skyLinesStyles: Style[] = Array(256);
+const launchStyles: Record<string, Style[]> = {active: [], notactive: []};
+function launchStyle(mode, launchId, feature, _) {
+    let v = 0;
+    let selected = false;
+    if (feature.get('features')) {
+        v = feature.get('features').reduce((a, x) => (getValue(mode, x) > a ? getValue(mode, x) : a), 0);
+        selected = feature.get('features').reduce((a, x) => a || x.get('id') == launchId, false);
+    } else {
+        v = getValue(mode, feature);
+        selected = feature.get('id') == launchId;
+    }
+    const klass = getSizeClass(mode, v);
+    if (selected) {
+        if (!launchStyles.active[klass]) {
+            launchStyles.active[klass] = new Style({image: new Icon({src: iconLaunchActive, scale: iconSizes[klass]})});
+        }
+        return launchStyles.active[klass];
+    }
+    if (!launchStyles.notactive[klass]) {
+        launchStyles.notactive[klass] = new Style({image: new Icon({src: iconLaunch, scale: iconSizes[klass]})});
+    }
+    return launchStyles.notactive[klass];
+}
 
 export function Map() {
     const settings = useSelector((state) => state.settings);
@@ -93,26 +116,8 @@ export function Map() {
         [navigate, settings.mode]
     );
 
-    const style = React.useCallback(
-        (feature, _) => {
-            let v = 0;
-            let selected = false;
-            if (feature.get('features')) {
-                v = feature
-                    .get('features')
-                    .reduce((a, x) => (getValue(settings.mode, x) > a ? getValue(settings.mode, x) : a), 0);
-                selected = feature.get('features').reduce((a, x) => a || x.get('id') == launchId, false);
-            } else {
-                v = getValue(settings.mode, feature);
-                selected = feature.get('id') == launchId;
-            }
-            if (selected) {
-                return <RStyle.RIcon src={iconLaunchActive} scale={iconSizes[getSizeClass(settings.mode, v)]} />;
-            }
-            return <RStyle.RIcon src={iconLaunch} scale={iconSizes[getSizeClass(settings.mode, v)]} />;
-        },
-        [settings.mode, launchId]
-    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const style = React.useCallback(launchStyle.bind(null, settings.mode, launchId), [(settings.mode, launchId)]);
 
     const featuresUrl = `${serverUrl}/geojson/launch/list?${fetchFilters(settings)}`;
     React.useEffect(() => setMapSpinner(true), [featuresUrl]);
@@ -142,9 +147,8 @@ export function Map() {
                     onPointerLeave={cursorDefault}
                     onFeaturesLoadEnd={() => void setMapSpinner(false)}
                     distance={50}
-                >
-                    <RStyle.RStyle render={style} />
-                </RLayerCluster>
+                    style={style}
+                />
                 <RLayerVectorImage zIndex={10}>
                     <RStyle.RStyle>
                         <RStyle.RStroke color='#0000FF40' width={1} />
