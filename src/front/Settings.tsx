@@ -70,9 +70,10 @@ function WindButton(props: {wind: typeof directionsWind[number] | 'I'}) {
 
     const wind = props.wind;
     const onClick = React.useCallback(
-        wind === 'I'
-            ? () => void dispatch(settingsSlice.actions.invertWind())
-            : () => void dispatch(settingsSlice.actions.setWind({wind, val: !setting})),
+        () =>
+            wind === 'I'
+                ? void dispatch(settingsSlice.actions.invertWind())
+                : void dispatch(settingsSlice.actions.setWind({wind, val: !setting})),
         [wind, dispatch, setting]
     );
 
