@@ -7,7 +7,6 @@ import {RFeature, RStyle, RContext} from 'rlayers';
 import {RouteInfo} from './store';
 
 RFeature.hitTolerance = 10;
-RFeature.pointerEvents = ['click'];
 
 export default function MapRoute(props: {route: RouteInfo; highlight?: boolean}) {
     const context = useContext(RContext);
