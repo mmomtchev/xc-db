@@ -80,7 +80,7 @@ export function Route(props: {route: RouteInfo}) {
     React.useLayoutEffect(() => {
         if (routeId !== null && routeId === props.route.id && ref.current && !flightId)
             scrollIntoViewIfNeeded(ref.current);
-    });
+    }, [flightId, routeId, props.route.id]);
 
     return (
         <div
