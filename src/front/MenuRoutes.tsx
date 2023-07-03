@@ -71,21 +71,22 @@ export function Route(props: {route: RouteInfo}) {
     const intl = useIntl();
 
     const ref = React.useRef<HTMLDivElement>(null);
+    const active = routeId === props.route.id;
 
     React.useEffect(() => {
-        if (routeId !== null && routeId === props.route.id && routeId !== route?.id)
-            dispatch(flightData.actions.loadRoute(props.route));
-    }, [routeId, props.route, route, dispatch]);
+        if (routeId !== null && active && routeId !== route?.id) dispatch(flightData.actions.loadRoute(props.route));
+    }, [routeId, active, props.route, route, dispatch]);
 
     React.useLayoutEffect(() => {
-        if (routeId !== null && routeId === props.route.id && ref.current && !flightId)
-            scrollIntoViewIfNeeded(ref.current);
-    }, [flightId, routeId, props.route.id]);
+        if (routeId !== null && active && ref.current && !flightId) scrollIntoViewIfNeeded(ref.current);
+    }, [flightId, active, routeId, props.route, props.route.id]);
 
     return (
         <div
             ref={ref}
-            className='infobox route d-flex flex-column justify-content-start rounded-2 m-1 p-2 border'
+            className={`infobox route d-flex flex-column justify-content-start rounded-2 m-1 p-2 border ${
+                active ? 'border-dark border-3' : ''
+            }`}
             onClick={React.useCallback(() => {
                 if (routeId !== props.route.id) {
                     navigate(`/launch/${launchId}/route/${props.route.id}`);
@@ -94,7 +95,7 @@ export function Route(props: {route: RouteInfo}) {
                 }
             }, [props.route, routeId, launchId, navigate, dispatch])}
         >
-            <div className='border rounded p-1 mb-2'>
+            <div className='border rounded p-1 mb-2 border-1'>
                 <Location lon={props.route.tp[0][0]} lat={props.route.tp[0][1]} />
                 <Location lon={props.route.tp[1][0]} lat={props.route.tp[1][1]} />
                 <Location lon={props.route.tp[2][0]} lat={props.route.tp[2][1]} />
