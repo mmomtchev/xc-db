@@ -67,7 +67,7 @@ async function importFlight(file: string) {
     const landing = score.opt['landing'];
     const landingFix = fixes[landing];
 
-    await db.query('BEGIN');
+    await db.query('START TRANSACTION');
     try {
         r = await db.query(
             'INSERT INTO flight (hash, launch_point, landing_point, ' +

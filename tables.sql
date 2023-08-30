@@ -1,4 +1,6 @@
-SET collation_connection = 'utf8_general_ci';
+SET collation_connection = 'utf8mb4_unicode_520_ci';
+SET collation_database = 'utf8mb4_unicode_520_ci';
+SET collation_server = 'utf8mb4_unicode_520_ci';
 
 DROP VIEW IF EXISTS route_info;
 DROP VIEW IF EXISTS launch_info;
@@ -98,7 +100,7 @@ DELIMITER ;
 CREATE TABLE launch (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
     PRIMARY KEY (id)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE launch_official (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -106,13 +108,13 @@ CREATE TABLE launch_official (
     lat DECIMAL(9,6) NOT NULL,
     lng DECIMAL(9,6) NOT NULL,
     PRIMARY KEY (id)
-);
+) ENGINE=InnoDB;
 
 -- the route coordinates are defined only by the geometric center of the route coordinates
 -- of all flights that have been classified as following this route
 CREATE TABLE route (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE flight (
     id MEDIUMINT UNSIGNED NOT NULL AUTO_INCREMENT,
@@ -135,7 +137,7 @@ CREATE TABLE flight (
     FOREIGN KEY (route_id) REFERENCES route (id),
     INDEX (launch_id),
     INDEX (route_id)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE flight_extra (
     id MEDIUMINT UNSIGNED NOT NULL,
@@ -160,7 +162,7 @@ CREATE TABLE flight_extra (
     pilot_name VARCHAR(60) NOT NULL,
     PRIMARY KEY (id),
     FOREIGN KEY (id) REFERENCES flight (id)
-);
+) ENGINE=InnoDB;
 
 CREATE TABLE point (
     flight_id MEDIUMINT UNSIGNED NOT NULL,
@@ -172,7 +174,9 @@ CREATE TABLE point (
     PRIMARY KEY (flight_id, id),
     FOREIGN KEY (flight_id) REFERENCES flight (id),
     INDEX (lat, lng)
-);
+)
+    ENGINE=InnoDB
+    PAGE_COMPRESSED=1;
 
 CREATE TABLE wind (
     date DATE NOT NULL,
@@ -182,7 +186,7 @@ CREATE TABLE wind (
     direction SMALLINT UNSIGNED NOT NULL,
     PRIMARY KEY (date, lat, lng),
     INDEX (lat, lng)
-);
+) ENGINE=InnoDB;
 
 CREATE VIEW route_info AS
     SELECT route_id AS id,

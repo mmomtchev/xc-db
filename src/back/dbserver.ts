@@ -221,13 +221,13 @@ app.get(['/point/route/:route([0-9]+)/launch/:launch([0-9]+)', '/point/route/:ro
         const points =
             req.params.launch !== undefined
                 ? await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                      'SELECT flight_info.id AS flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE launch_id = ? AND route_id = ? AND ${filters(req, 'flight_info')}`,
                       [req.params.launch, req.params.route]
                   )
                 : await db.poolQuery(
-                      'SELECT flight_info.id as flight_id, point.id, alt' +
+                      'SELECT flight_info.id AS flight_id, point.id, alt' +
                           ' FROM flight_info LEFT JOIN point ON (flight_info.id = point.flight_id) ' +
                           ` WHERE route_id = ? AND ${filters(req)}`,
                       [req.params.route]
@@ -308,7 +308,7 @@ app.get('/:format(mvt|geojson)/point/route/:route([0-9]+)/:z([0-9]+)/:y([0-9]+)/
     const bottom = tileToLatitude(z, y + 1);
 
     const r = await db.poolQuery(
-        'SELECT flight_id,lat,lng from point JOIN flight_info ON (point.flight_id = flight_info.id)' +
+        'SELECT flight_id,lat,lng FROM point JOIN flight_info ON (point.flight_id = flight_info.id)' +
             ` WHERE route_id = ? AND ${filters(req)}` +
             ' AND (lat BETWEEN ? AND ?) AND (lng BETWEEN ? AND ?) LIMIT 1000000',
         [req.params.route, bottom, top, left, right]
