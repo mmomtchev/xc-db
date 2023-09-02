@@ -3,7 +3,7 @@
         "user": "xcdb",
         "pass": "94f99bf6",
         "db": "xcdb",
-        "host": "192.168.48.1"
+        "host": "localhost"
     },
     "dbserver": {
         "port": 8040,

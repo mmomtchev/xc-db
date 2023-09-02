@@ -89,7 +89,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     The flights will be scored by `igc-xc-score` as they are imported. Only `TRI` and `FAI` flights will be considered - this is something that you can change in `import.ts`.
 
-    Importing the 60 000 flights of the French national paragliding flying league of the last 10 years takes about 12 hours on a 4 CPU machine.
+    Importing the 70 000 flights of the French national paragliding flying league of the last 10 years takes from 4h to 24h depending on the machine.
 
 6. Import the wind
 
@@ -142,7 +142,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     `node build/back/classify.js route`
 
-    With 70 000 flights this should take about 12 hours on a 4 CPU machine.
+    With 70 000 flights this should take about 6 to 12 hours on a 4 CPU machine.
 
     **This step should always be run after adding additional flights - in this case it will be much faster.**
 
