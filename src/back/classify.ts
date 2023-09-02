@@ -43,6 +43,8 @@ const clustering = {
     }
 };
 
+let totalFlightsReclustered = 0;
+
 // This is not very fast but it is meant to be run once per day
 // It performs reanalysis of the clusters after adding new flights
 
@@ -73,6 +75,7 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
     );
     console.log(`grow: ${el['id']} +${add['changedRows']} flights`);
     if (add['changedRows'] === 0) return [];
+    totalFlightsReclustered += add['changedRows'];
 
     const remove = await db.query(
         `UPDATE flight NATURAL JOIN flight_extra SET ${clustering[element].id} = NULL WHERE ${clustering[element].id} = ? ` +
@@ -80,12 +83,14 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
         [el['id'], ...clustering[element].queryArgs.map((a) => el[a])]
     );
     console.log(`reduce: ${el['id']} -${remove['changedRows']} flights`);
+    totalFlightsReclustered += remove['changedRows'];
 
     const prune = await db.query(
         `DELETE FROM ${clustering[element].table} WHERE id NOT IN ` +
             `(SELECT DISTINCT ${clustering[element].id} FROM flight WHERE ${clustering[element].id} IS NOT NULL)`
     );
     console.log(`prune ${element}s: ${prune['changedRows']} ${element}s`);
+    totalFlightsReclustered += prune['changedRows'];
 
     const r = affected.map((x) => x[clustering[element].id]);
     r.push(id);
@@ -121,7 +126,7 @@ async function run(element: 'launch' | 'route', ids: number[]) {
             next.push(...more);
         }
         console.log('--');
-        affected = next;
+        affected = next.filter((v, i, a) => a.indexOf(v) === i);
     }
     console.log('==================');
 }
@@ -144,4 +149,9 @@ async function main(element: 'launch' | 'route', id?: string) {
 if (!process.argv[2] || (process.argv[2] !== 'route' && process.argv[2] !== 'launch'))
     throw new Error('No element given');
 
-main(process.argv[2], process.argv[3]).finally(() => db.close());
+main(process.argv[2], process.argv[3]).finally(() => {
+    db.close();
+    console.log(`Total flights reclustered ${totalFlightsReclustered}`);
+    if (totalFlightsReclustered > 0) process.exit(0);
+    else process.exit(1);
+});
