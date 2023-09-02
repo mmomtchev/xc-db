@@ -15,8 +15,7 @@ An alpha version of this project is currently running at [https://xcdb.velivole.
 In order to install and use this project, besides the source code available here, you will also need:
 
 -   A collection of flight tracks in FAI `.igc` format enriched with sidecar `.json` files containing the metadata (look below for an example)
--   _(optionally)_ A database of the wind conditions covering the period/area of the flight tracks in GRIB format
-    https://xcdb.velivole.fr/wind2012.grib to https://xcdb.velivole.fr/wind2023.grib covers France from 2012 to May 20th 2023
+-   _(optionally)_ A database of the wind conditions covering the period/area of the flight tracks in GRIB format that can be obtained from ERA5 using the provider downloader
 
 -   _(optionally)_ A list of names and coordinates for the possible launch locations in GeoJSON format
     https://data.velivole.fr/data/launch_sites.min.geojson is a good European database
@@ -94,11 +93,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
 6. Import the wind
 
-    If you can use the provided GRIBs with data from ECMWF ERA5, you can simply launch:
-
-    `node build/back/wind.js wind.grib`
-
-    Otherwise, edit the extent of the area you are interested in in `config.json`:
+    Edit the extent of the area you are interested in in `config.json`:
 
     ```json
     "map": {
@@ -131,6 +126,12 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
     node build/back/download_wind 2021 wind-2021.grib
     ```
 
+    Import it in the database:
+
+    ```shell
+    node build/back/wind.js wind-2021.grib
+    ```
+
 7. Import the names of launch sites
 
     The provided example file covers France and comes from both the FFVL and Paragliding Earth. Both of them distribute this information for free. If you need to make your own file, inspect the file format which is essentially a GeoJSON with some mandatory properties.
@@ -141,7 +142,7 @@ Required skills to work on it: Working knowledge of TypeScript, React and Node.j
 
     `node build/back/classify.js route`
 
-    With 60 000 flights this should take about 4 hours on a 4 CPU machine.
+    With 70 000 flights this should take about 12 hours on a 4 CPU machine.
 
     **This step should always be run after adding additional flights - in this case it will be much faster.**
 
