@@ -14,7 +14,9 @@ const clustering = {
         table: 'route',
         id: 'route_id',
         querySQL:
-            'p1_lat BETWEEN (? - 0.25) AND (? + 0.25) AND p1_lng BETWEEN (? - 0.25) AND (? + 0.25)' +
+            // We can't have an index on the great circle distance
+            // but we can eliminate very early most of the points
+            'p1_lat BETWEEN (? - 0.1) AND (? + 0.1) AND p1_lng BETWEEN (? - 0.2) AND (? + 0.2)' +
             ' AND great_circle(p1_lat, p1_lng, ?, ?) < sup(? * 0.05, 3)' +
             ' AND great_circle(p2_lat, p2_lng, ?, ?) < sup(? * 0.05, 3)' +
             ' AND great_circle(p3_lat, p3_lng, ?, ?) < sup(? * 0.05, 3)',
@@ -65,6 +67,8 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
     );
     console.log(`affect: ${el['id']} ${affected.length} flights`);
 
+    await db.query('BEGIN TRANSACTION');
+
     const add = await db.query(
         'UPDATE flight NATURAL JOIN flight_extra' +
             ` LEFT JOIN ${clustering[element].view} ON (flight.${clustering[element].id} = ${clustering[element].view}.id)` +
@@ -75,7 +79,6 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
     );
     console.log(`grow: ${el['id']} +${add['changedRows']} flights`);
     if (add['changedRows'] === 0) return [];
-    totalFlightsReclustered += add['changedRows'];
 
     const remove = await db.query(
         `UPDATE flight NATURAL JOIN flight_extra SET ${clustering[element].id} = NULL WHERE ${clustering[element].id} = ? ` +
@@ -83,17 +86,25 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
         [el['id'], ...clustering[element].queryArgs.map((a) => el[a])]
     );
     console.log(`reduce: ${el['id']} -${remove['changedRows']} flights`);
-    totalFlightsReclustered += remove['changedRows'];
 
     const prune = await db.query(
         `DELETE FROM ${clustering[element].table} WHERE id NOT IN ` +
             `(SELECT DISTINCT ${clustering[element].id} FROM flight WHERE ${clustering[element].id} IS NOT NULL)`
     );
     console.log(`prune ${element}s: ${prune['changedRows']} ${element}s`);
-    totalFlightsReclustered += prune['changedRows'];
+
+    if (add['changedRows'] < remove['changedRows'] + prune['changedRows']) {
+        // Commit only if the new classification has better grouping
+        // This ensures that algorithm convergences
+        console.log('Non-convergent modification, rolling back');
+        await db.query('ROLLBACK');
+        return [];
+    }
+    await db.query('COMMIT');
 
     const r = affected.map((x) => x[clustering[element].id]);
     r.push(id);
+    totalFlightsReclustered += add['changedRows'] + remove['changedRows'] + prune['changedRows'];
     return r;
 }
 
