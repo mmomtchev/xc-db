@@ -40,8 +40,10 @@ const clustering = {
         view: 'launch_info',
         table: 'launch',
         id: 'launch_id',
-        querySQL: 'great_circle(launch_lat, launch_lng, ?, ?) < 3',
-        queryArgs: ['lat', 'lng']
+        querySQL:
+            'launch_lat BETWEEN (? - 0.1) AND (? + 0.1) AND launch_lng BETWEEN (? - 0.2) AND (? + 0.2)' +
+            ' AND great_circle(launch_lat, launch_lng, ?, ?) < 3',
+        queryArgs: ['lat', 'lat', 'lng', 'lng', 'lat', 'lng']
     }
 };
 

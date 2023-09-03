@@ -163,6 +163,7 @@ CREATE TABLE flight_extra (
     PRIMARY KEY (id),
     FOREIGN KEY (id) REFERENCES flight (id),
     INDEX (p1_lat, p1_lng)
+    INDEX (launch_lat, launch_lng)
 ) ENGINE=InnoDB;
 
 CREATE TABLE point (
