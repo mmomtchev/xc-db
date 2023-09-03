@@ -69,7 +69,7 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
     );
     console.log(`affect: ${el['id']} ${affected.length} flights`);
 
-    await db.query('BEGIN TRANSACTION');
+    await db.query('START TRANSACTION');
 
     const add = await db.query(
         'UPDATE flight NATURAL JOIN flight_extra' +
@@ -162,9 +162,13 @@ async function main(element: 'launch' | 'route', id?: string) {
 if (!process.argv[2] || (process.argv[2] !== 'route' && process.argv[2] !== 'launch'))
     throw new Error('No element given');
 
-main(process.argv[2], process.argv[3]).finally(() => {
-    db.close();
-    console.log(`Total flights reclustered ${totalFlightsReclustered}`);
-    if (totalFlightsReclustered > 0) process.exit(0);
-    else process.exit(1);
-});
+main(process.argv[2], process.argv[3])
+    .catch((e) => {
+        console.error(e);
+    })
+    .finally(() => {
+        db.close();
+        console.log(`Total flights reclustered ${totalFlightsReclustered}`);
+        if (totalFlightsReclustered > 0) process.exit(0);
+        else process.exit(1);
+    });
