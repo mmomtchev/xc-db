@@ -14,7 +14,8 @@ async function connect() {
             database: config.db.db,
             host: config.db.host,
             user: config.db.user,
-            password: config.db.pass
+            password: config.db.pass,
+            charset: 'utf8mb4_unicode_520_ci'
         });
 
         return new Promise<void>((res, rej) => {
@@ -34,7 +35,8 @@ function createPool() {
             database: config.db.db,
             host: config.db.host,
             user: config.db.user,
-            password: config.db.pass
+            password: config.db.pass,
+            charset: 'utf8mb4_unicode_520_ci'
         });
     }
 }

@@ -14,7 +14,9 @@ const clustering = {
         table: 'route',
         id: 'route_id',
         querySQL:
-            'p1_lat BETWEEN (? - 0.25) AND (? + 0.25) AND p1_lng BETWEEN (? - 0.25) AND (? + 0.25)' +
+            // We can't have an index on the great circle distance
+            // but we can eliminate very early most of the points
+            'p1_lat BETWEEN (? - 0.1) AND (? + 0.1) AND p1_lng BETWEEN (? - 0.2) AND (? + 0.2)' +
             ' AND great_circle(p1_lat, p1_lng, ?, ?) < sup(? * 0.05, 3)' +
             ' AND great_circle(p2_lat, p2_lng, ?, ?) < sup(? * 0.05, 3)' +
             ' AND great_circle(p3_lat, p3_lng, ?, ?) < sup(? * 0.05, 3)',
@@ -38,10 +40,14 @@ const clustering = {
         view: 'launch_info',
         table: 'launch',
         id: 'launch_id',
-        querySQL: 'great_circle(launch_lat, launch_lng, ?, ?) < 3',
-        queryArgs: ['lat', 'lng']
+        querySQL:
+            'launch_lat BETWEEN (? - 0.1) AND (? + 0.1) AND launch_lng BETWEEN (? - 0.2) AND (? + 0.2)' +
+            ' AND great_circle(launch_lat, launch_lng, ?, ?) < 3',
+        queryArgs: ['lat', 'lat', 'lng', 'lng', 'lat', 'lng']
     }
 };
+
+let totalFlightsReclustered = 0;
 
 // This is not very fast but it is meant to be run once per day
 // It performs reanalysis of the clusters after adding new flights
@@ -62,6 +68,8 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
         [el['flights'], ...clustering[element].queryArgs.map((a) => el[a])]
     );
     console.log(`affect: ${el['id']} ${affected.length} flights`);
+
+    await db.query('START TRANSACTION');
 
     const add = await db.query(
         'UPDATE flight NATURAL JOIN flight_extra' +
@@ -87,8 +95,18 @@ async function recluster(element: 'launch' | 'route', id: number): Promise<numbe
     );
     console.log(`prune ${element}s: ${prune['changedRows']} ${element}s`);
 
+    if (add['changedRows'] < remove['changedRows'] + prune['changedRows']) {
+        // Commit only if the new classification has better grouping
+        // This ensures that algorithm convergences
+        console.log('Non-convergent modification, rolling back');
+        await db.query('ROLLBACK');
+        return [];
+    }
+    await db.query('COMMIT');
+
     const r = affected.map((x) => x[clustering[element].id]);
     r.push(id);
+    totalFlightsReclustered += add['changedRows'] + remove['changedRows'] + prune['changedRows'];
     return r;
 }
 
@@ -121,7 +139,7 @@ async function run(element: 'launch' | 'route', ids: number[]) {
             next.push(...more);
         }
         console.log('--');
-        affected = next;
+        affected = next.filter((v, i, a) => a.indexOf(v) === i);
     }
     console.log('==================');
 }
@@ -144,4 +162,13 @@ async function main(element: 'launch' | 'route', id?: string) {
 if (!process.argv[2] || (process.argv[2] !== 'route' && process.argv[2] !== 'launch'))
     throw new Error('No element given');
 
-main(process.argv[2], process.argv[3]).finally(() => db.close());
+main(process.argv[2], process.argv[3])
+    .catch((e) => {
+        console.error(e);
+    })
+    .finally(() => {
+        db.close();
+        console.log(`Total flights reclustered ${totalFlightsReclustered}`);
+        if (totalFlightsReclustered > 0) process.exit(0);
+        else process.exit(1);
+    });
