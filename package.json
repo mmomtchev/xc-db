@@ -76,7 +76,7 @@
         "@testing-library/react": "^14.2.1",
         "@testing-library/user-event": "^13.5.0",
         "@types/geojson": "^7946.0.10",
-        "@types/jest": "^27.5.2",
+        "@types/jest": "^29.5.12",
         "@types/mysql": "^2.15.21",
         "@types/ndarray": "^1.0.11",
         "@types/node": "^18.14.0",
