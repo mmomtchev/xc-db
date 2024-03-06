@@ -39,7 +39,7 @@
         "bootstrap": "^5.3.3",
         "cors": "^2.8.5",
         "express": "^5.0.0-beta.1",
-        "gdal-async": "^3.7.2-1",
+        "gdal-async": "^3.8.4",
         "geographiclib": "^1.52.2",
         "geotiff": "^2.0.5",
         "igc-parser": "^1.1.0",
