@@ -78,7 +78,7 @@
         "@types/geojson": "^7946.0.14",
         "@types/jest": "^29.5.12",
         "@types/mysql": "^2.15.26",
-        "@types/ndarray": "^1.0.11",
+        "@types/ndarray": "^1.0.14",
         "@types/node": "^20.11.27",
         "@types/react": "^18.2.64",
         "@types/react-dom": "^18.2.21",
