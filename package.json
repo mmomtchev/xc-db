@@ -81,7 +81,7 @@
         "@types/ndarray": "^1.0.14",
         "@types/node": "^20.11.27",
         "@types/react": "^18.2.64",
-        "@types/react-dom": "^18.2.21",
+        "@types/react-dom": "^18.2.22",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "@typescript-eslint/typescript-estree": "^7.2.0",
