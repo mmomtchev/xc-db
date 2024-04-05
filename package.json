@@ -69,7 +69,7 @@
         "@formatjs/cli": "^6.2.7",
         "@rollup/plugin-commonjs": "^22.0.2",
         "@rollup/plugin-json": "^6.1.0",
-        "@rollup/plugin-node-resolve": "^14.1.0",
+        "@rollup/plugin-node-resolve": "^15.2.3",
         "@rollup/plugin-typescript": "^11.1.6",
         "@stdlib/types": "0.0.14",
         "@testing-library/jest-dom": "^6.4.2",
