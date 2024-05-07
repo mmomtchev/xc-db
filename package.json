@@ -79,7 +79,7 @@
         "@types/jest": "^29.5.12",
         "@types/mysql": "^2.15.26",
         "@types/ndarray": "^1.0.14",
-        "@types/node": "^20.12.7",
+        "@types/node": "^20.12.10",
         "@types/react": "^18.2.75",
         "@types/react-dom": "^18.3.0",
         "@typescript-eslint/eslint-plugin": "^7.8.0",
