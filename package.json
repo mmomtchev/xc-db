@@ -86,7 +86,7 @@
         "@typescript-eslint/parser": "^8.3.0",
         "@typescript-eslint/typescript-estree": "^8.4.0",
         "builtin-modules": "^4.0.0",
-        "eslint": "^9.9.1",
+        "eslint": "^9.10.0",
         "eslint-config-prettier": "^9.1.0",
         "eslint-plugin-formatjs": "^4.13.3",
         "eslint-plugin-import": "^2.29.1",
