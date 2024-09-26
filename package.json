@@ -7,7 +7,7 @@
     "scripts": {
         "build": "npm run build:front && npm run build:back",
         "build:front": "npm run lang:compile && REACT_APP_BUILD=\"`git rev-parse --short HEAD` `date +%Y-%m-%d`\" react-scripts build",
-        "build:back": "tsc && rollup -c rollup.config.js",
+        "build:back": "tsc && rollup -c rollup.config.mjs",
         "start": "react-scripts start",
         "start:orel": "ssh -L 3000:localhost:3000 -L 8040:localhost:8040 orel.garga.net \"cd src/xc-db && npm run start\"",
         "deploy:front": "tar -C build -zcf - `cd build; ls *.png; ls favicon* index*` manifest.json robots.txt static | mbuffer | ssh xcdb@orel.garga.net 'cat - | mbuffer | tar -C www -zxvf -'",
