@@ -48,7 +48,7 @@ function ModeButton(props: {label: string; mode: Settings['mode']}) {
     );
 }
 
-function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
+function CategoryButton(props: {cat: (typeof categoriesGlider)[number]}) {
     const setting = useSelector((state) => state.settings.category[props.cat]);
     const dispatch = useDispatch();
 
@@ -63,7 +63,7 @@ function CategoryButton(props: {cat: typeof categoriesGlider[number]}) {
     );
 }
 
-function WindButton(props: {wind: typeof directionsWind[number] | 'I'}) {
+function WindButton(props: {wind: (typeof directionsWind)[number] | 'I'}) {
     const setting = useSelector((state) => state.settings.wind[props.wind]);
     const dispatch = useDispatch();
     const intl = useIntl();
@@ -89,7 +89,7 @@ function WindButton(props: {wind: typeof directionsWind[number] | 'I'}) {
     );
 }
 
-function MonthButton(props: {month: typeof namesMonth[number]}) {
+function MonthButton(props: {month: (typeof namesMonth)[number]}) {
     const intl = useIntl();
     const setting = useSelector((state) => state.settings.month[props.month]);
     const dispatch = useDispatch();

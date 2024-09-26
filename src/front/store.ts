@@ -57,7 +57,7 @@ export const SQLRouteInfo = (route) =>
             route.wind_directions &&
             route.wind_directions.split &&
             route.wind_directions.split(',').map((v) => parseInt(v))
-    } as RouteInfo);
+    }) as RouteInfo;
 
 export type FlightInfo = {
     route_id: number;
@@ -103,7 +103,7 @@ export const SQLFlightInfo = (flight) =>
             [flight.e1_lng, flight.e1_lat],
             [flight.e2_lng, flight.e2_lat]
         ]
-    } as FlightInfo);
+    }) as FlightInfo;
 
 export type Settings = {
     mode: 'score' | 'avg' | 'flights';
@@ -244,11 +244,11 @@ export const settingsSlice = createSlice({
             state.mode = action.payload;
             if (window.localStorage) localStorage.setItem('mode', JSON.stringify(state.mode));
         },
-        setCategory: (state, action: PayloadAction<{cat: typeof categoriesGlider[number]; val: boolean}>) => {
+        setCategory: (state, action: PayloadAction<{cat: (typeof categoriesGlider)[number]; val: boolean}>) => {
             state.category[action.payload.cat] = action.payload.val;
             if (window.localStorage) localStorage.setItem('category', JSON.stringify(state.category));
         },
-        setWind: (state, action: PayloadAction<{wind: typeof directionsWind[number]; val: boolean}>) => {
+        setWind: (state, action: PayloadAction<{wind: (typeof directionsWind)[number]; val: boolean}>) => {
             state.wind[action.payload.wind] = action.payload.val;
             if (window.localStorage) localStorage.setItem('wind', JSON.stringify(state.wind));
         },
@@ -260,7 +260,7 @@ export const settingsSlice = createSlice({
             state.score[action.payload.group] = action.payload.val;
             if (window.localStorage) localStorage.setItem('score', JSON.stringify(state.score));
         },
-        setMonth: (state, action: PayloadAction<{month: typeof namesMonth[number]; val: boolean}>) => {
+        setMonth: (state, action: PayloadAction<{month: (typeof namesMonth)[number]; val: boolean}>) => {
             state.month[action.payload.month] = action.payload.val;
             if (window.localStorage) localStorage.setItem('month', JSON.stringify(state.month));
         }

@@ -4,11 +4,11 @@ export const categoriesScore = [{to: 50}, {from: 50, to: 100}, {from: 100, to: 2
 export const namesMonth = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
 
 export type categoryGlider = {
-    [Property in typeof categoriesGlider[number]]: boolean;
+    [Property in (typeof categoriesGlider)[number]]: boolean;
 };
 export type selectionMonth = {
-    [Property in typeof namesMonth[number]]: boolean;
+    [Property in (typeof namesMonth)[number]]: boolean;
 };
 export type directionWind = {
-    [Property in typeof directionsWind[number]]: boolean;
+    [Property in (typeof directionsWind)[number]]: boolean;
 };
