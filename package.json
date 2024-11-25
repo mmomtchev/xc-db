@@ -35,7 +35,7 @@
         ]
     },
     "dependencies": {
-        "@reduxjs/toolkit": "^2.2.7",
+        "@reduxjs/toolkit": "^2.3.0",
         "bootstrap": "^5.3.3",
         "cors": "^2.8.5",
         "express": "^5.0.1",
