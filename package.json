@@ -93,7 +93,7 @@
         "eslint-plugin-react": "^7.37.2",
         "eslint-plugin-react-hooks": "^5.0.0",
         "husky": "^9.1.6",
-        "lru-cache": "^11.0.1",
+        "lru-cache": "^11.0.2",
         "prettier": "^3.3.3",
         "query-mvt": "^1.0.2",
         "rollup": "^2.79.2",
