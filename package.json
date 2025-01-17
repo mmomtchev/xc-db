@@ -73,7 +73,7 @@
         "@stdlib/types": "0.0.14",
         "@testing-library/jest-dom": "^6.6.3",
         "@testing-library/react": "^16.0.1",
-        "@testing-library/user-event": "^14.5.2",
+        "@testing-library/user-event": "^14.6.0",
         "@types/geojson": "^7946.0.15",
         "@types/jest": "^29.5.14",
         "@types/mysql": "^2.15.26",
