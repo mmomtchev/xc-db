@@ -8,5 +8,5 @@ updates:
     groups:
       rlayers:
         patterns:
-          - 'rtlayers'
+          - 'rlayers'
           - 'ol'
