@@ -23,7 +23,10 @@ const shared = [
         "require('readable-stream/transform')": "require('stream').Transform",
         'require("readable-stream/transform")': 'require("stream").Transform',
         'readable-stream': 'stream',
-        'global.__BUILD__': JSON.stringify(execSync('echo -n `git rev-parse --short HEAD` `date +%Y-%m-%d`').toString())
+        'global.__BUILD__': JSON.stringify(
+            execSync('echo -n `git rev-parse --short HEAD` `date +%Y-%m-%d`').toString()
+        ),
+        preventAssignment: true
     }),
     commonjs({
         include: ['node_modules/**', 'src/**']
