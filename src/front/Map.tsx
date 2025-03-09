@@ -29,6 +29,7 @@ import MapRoute from './MapRoute';
 import MapTrack from './MapTrack';
 import {fetchFilters} from './Settings';
 import {Circle, Fill, Icon, Style} from 'ol/style';
+import {Geometry} from 'ol/geom';
 
 const Forclaz = fromLonLat([6.2463, 45.8131]);
 const geojson = new GeoJSON({featureProjection: 'EPSG:4326'});
@@ -108,7 +109,7 @@ export function Map() {
 
     const navigate = useNavigate();
     const click = React.useCallback(
-        (ev: RFeatureUIEvent) => {
+        (ev: RFeatureUIEvent<Feature<Geometry>>) => {
             const all = ev.target.get('features') as Feature[];
             const f = all.reduce((a, x) => (getValue(settings.mode, x) > getValue(settings.mode, a) ? x : a), all[0]);
             navigate(`/launch/${f.get('id')}`);
