@@ -5,7 +5,7 @@ import native from 'rollup-plugin-natives';
 import copy from 'rollup-plugin-copy';
 import builtins from 'builtin-modules';
 import commonjs from '@rollup/plugin-commonjs';
-import replace from 'rollup-plugin-replace';
+import replace from '@rollup/plugin-replace';
 import json from '@rollup/plugin-json';
 
 const shared = [
