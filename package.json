@@ -97,7 +97,7 @@
         "lru-cache": "^11.0.2",
         "prettier": "^3.5.3",
         "query-mvt": "^1.0.2",
-        "rollup": "^4.39.0",
+        "rollup": "^4.40.0",
         "rollup-plugin-copy": "^3.5.0",
         "rollup-plugin-natives": "git+https://github.com/mmomtchev/rollup-plugin-natives.git#node-pre-gyp"
     },
