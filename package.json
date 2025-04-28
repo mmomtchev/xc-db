@@ -87,7 +87,7 @@
         "@typescript-eslint/typescript-estree": "^8.21.0",
         "builtin-modules": "^5.0.0",
         "eslint": "^8.57.1",
-        "eslint-config-prettier": "^10.1.1",
+        "eslint-config-prettier": "^10.1.2",
         "eslint-plugin-formatjs": "^4.13.3",
         "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-prettier": "^5.2.6",
